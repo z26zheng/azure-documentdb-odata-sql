@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Azure.Documents.OData.Sql
 {
-    public sealed class SQLQueryFormatter : QueryFormatterBase
+    public class SQLQueryFormatter : QueryFormatterBase
     {
         /// <summary>
         /// fieldName => c.fieldName
@@ -31,7 +31,7 @@
         /// <returns>The translated source</returns>
         public override string TranslateSource(string source, string edmProperty)
         {
-            var str = string.Concat(source.Trim(), ".", edmProperty.Trim());
+            var str = string.Concat(source.Trim(), Constants.SymbolDot, edmProperty.Trim());
             return str.StartsWith(Constants.SQLFieldNameSymbol) ? str : string.Concat(Constants.SQLFieldNameSymbol, str);
         }
 

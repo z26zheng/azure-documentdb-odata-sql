@@ -50,13 +50,13 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <param name="queryBuilder"></param>
         /// <param name="odataQueryOptions"></param>
         /// <returns></returns>
-        public static string Translate(ODataNodeToStringBuilder queryBuilder, ODataQueryOptions odataQueryOptions, string typeString, ref FeedOptions feedOptions)
+        public string Translate(ODataQueryOptions odataQueryOptions, string typeString, ref FeedOptions feedOptions)
         {
             try
             {
-                var orderbyClause = odataQueryOptions?.OrderBy?.OrderByClause == null ? string.Empty : string.Format("{0} {1} ", Constants.SQLOrderBySymbol, queryBuilder.TranslateOrderByClause(odataQueryOptions.OrderBy.OrderByClause));
+                var orderbyClause = odataQueryOptions?.OrderBy?.OrderByClause == null ? string.Empty : string.Format("{0} {1} ", Constants.SQLOrderBySymbol, this.TranslateOrderByClause(odataQueryOptions.OrderBy.OrderByClause));
                 var typeFilter = string.Concat("WHERE c._t = '", typeString.ToUpper(), "' ");
-                var whereClause = odataQueryOptions?.Filter?.FilterClause == null ? typeFilter : string.Format("{0}{1} {2} ", typeFilter, Constants.SQLAndSymbol, queryBuilder.TranslateFilterClause(odataQueryOptions.Filter.FilterClause));
+                var whereClause = odataQueryOptions?.Filter?.FilterClause == null ? typeFilter : string.Format("{0}{1} {2} ", typeFilter, Constants.SQLAndSymbol, this.TranslateFilterClause(odataQueryOptions.Filter.FilterClause));
                 if (odataQueryOptions?.Top?.Value > 0)
                 {
                     feedOptions.MaxItemCount = odataQueryOptions.Top.Value;
