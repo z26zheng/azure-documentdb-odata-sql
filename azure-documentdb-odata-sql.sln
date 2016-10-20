@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azure-documentdb-odata-sql", "azure-documentdb-odata-sql\azure-documentdb-odata-sql.csproj", "{D59035E3-C274-4CFF-B835-F79D4FC0411C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D59035E3-C274-4CFF-B835-F79D4FC0411C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D59035E3-C274-4CFF-B835-F79D4FC0411C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D59035E3-C274-4CFF-B835-F79D4FC0411C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D59035E3-C274-4CFF-B835-F79D4FC0411C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
