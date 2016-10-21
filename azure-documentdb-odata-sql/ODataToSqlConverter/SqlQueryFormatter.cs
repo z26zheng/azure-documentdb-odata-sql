@@ -9,7 +9,7 @@
         /// <returns></returns>
         public override string TranslateFieldName(string fieldName)
         {
-            return string.Concat(Constants.SQLFieldNameSymbol, fieldName.Trim());
+            return string.Concat(Constants.SQLFieldNameSymbol, Constants.SymbolDot, fieldName.Trim());
         }
 
         /// <summary>
@@ -20,7 +20,7 @@
         /// <returns>enumValue without the namespace</returns>
         public override string TranslateEnumValue(string value, string nameSpace)
         {
-            return string.Concat(Constants.SQLFieldNameSymbol, value.Substring(nameSpace.Length).Trim());
+            return string.Concat(value.Substring(nameSpace.Length).Trim());
         }
 
         /// <summary>
@@ -32,7 +32,7 @@
         public override string TranslateSource(string source, string edmProperty)
         {
             var str = string.Concat(source.Trim(), Constants.SymbolDot, edmProperty.Trim());
-            return str.StartsWith(Constants.SQLFieldNameSymbol) ? str : string.Concat(Constants.SQLFieldNameSymbol, str);
+            return str.StartsWith(Constants.SQLFieldNameSymbol + Constants.SymbolDot) ? str : string.Concat(Constants.SQLFieldNameSymbol, Constants.SymbolDot, str);
         }
 
     }

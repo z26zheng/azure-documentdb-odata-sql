@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <summary>
         /// 
         /// </summary>
-        public const string SQLFieldNameSymbol = "c.";
+        public const string SQLFieldNameSymbol = "c";
 
         /// <summary>
         /// Sql equal operator

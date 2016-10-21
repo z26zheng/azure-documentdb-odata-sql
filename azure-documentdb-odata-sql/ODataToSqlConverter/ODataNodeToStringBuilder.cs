@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.Documents.Client;
-using Microsoft.OData.Core;
+﻿using Microsoft.OData.Core;
 using Microsoft.OData.Core.UriParser;
 using Microsoft.OData.Core.UriParser.Semantic;
 using Microsoft.OData.Core.UriParser.TreeNodeKinds;
@@ -8,15 +7,93 @@ using Microsoft.OData.Edm;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Web.OData.Query;
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {
     /// <summary>
+    /// 
+    /// </summary>
+    public enum TranslateOptions
+    {
+        SELECT_CLAUSE   = 0x0001,
+        WHERE_CLAUSE    = 0x0010,
+        ORDERBY_CLAUSE  = 0x0100,
+        TOP_CLAUSE      = 0x1000,
+        ALL             = SELECT_CLAUSE | WHERE_CLAUSE | ORDERBY_CLAUSE | TOP_CLAUSE
+    }
+
+    /// <summary>
     /// Build QueryNode to string Representation 
     /// </summary>
     public class ODataNodeToStringBuilder : QueryNodeVisitor<string>
     {
+        /// <summary>
+        /// function that takes in an <see cref="ODataQueryOptions"/>, a string representing the type to filter, and a <see cref="FeedOptions"/>
+        /// </summary>
+        /// <param name="odataQueryOptions"></param>
+        /// <param name="feedOptions"></param>
+        /// <param name="additionalWhereClause"></param>
+        /// <returns>returns an SQL expression if successfully translated, otherwise a null string</returns>
+        public string Translate(ODataQueryOptions odataQueryOptions, TranslateOptions translateOptions, string additionalWhereClause = null)
+        {
+            try
+            {
+                string selectClause, whereClause, orderbyClause, topClause;
+                selectClause = whereClause = orderbyClause = topClause = string.Empty;
+
+                // SELECT CLAUSE
+                if ((translateOptions & TranslateOptions.SELECT_CLAUSE) == TranslateOptions.SELECT_CLAUSE)
+                {
+                    // TOP CLAUSE
+                    if ((translateOptions & TranslateOptions.TOP_CLAUSE) == TranslateOptions.TOP_CLAUSE)
+                    {
+                        topClause = odataQueryOptions?.Top?.Value > 0
+                            ? $"{Constants.SQLTopSymbol} {odataQueryOptions.Top.Value} "
+                            : string.Empty;
+                    }
+
+                    selectClause = odataQueryOptions?.SelectExpand?.RawSelect == null
+                        ? "*"
+                        : string.Join(", ", odataQueryOptions.SelectExpand.RawSelect.Split(',').Select(c => string.Concat("c.", c.Trim())));
+                    selectClause = $"{Constants.SQLSelectSymbol} {topClause}{selectClause} {Constants.SQLFromSymbol} {Constants.SQLFieldNameSymbol} ";
+                }
+
+                // WHERE CLAUSE
+                if ((translateOptions & TranslateOptions.WHERE_CLAUSE) == TranslateOptions.WHERE_CLAUSE)
+                {
+                    var customWhereClause = additionalWhereClause == null
+                        ? string.Empty
+                        : $"{additionalWhereClause}";
+                    whereClause = odataQueryOptions?.Filter?.FilterClause == null
+                        ? string.Empty
+                        : $"{this.TranslateFilterClause(odataQueryOptions.Filter.FilterClause)}";
+                    whereClause = (!string.IsNullOrEmpty(customWhereClause) && !string.IsNullOrEmpty(whereClause))
+                        ? $"{customWhereClause} AND {whereClause}"
+                        : $"{customWhereClause}{whereClause}";
+                    whereClause = string.IsNullOrEmpty(whereClause)
+                        ? string.Empty
+                        : $"{Constants.SQLWhereSymbol} {whereClause} ";
+                }
+
+                // ORDER BY CLAUSE
+                if ((translateOptions & TranslateOptions.ORDERBY_CLAUSE) == TranslateOptions.ORDERBY_CLAUSE)
+                {
+                    orderbyClause = odataQueryOptions?.OrderBy?.OrderByClause == null
+                        ? string.Empty
+                        : $"{Constants.SQLOrderBySymbol} {this.TranslateOrderByClause(odataQueryOptions.OrderBy.OrderByClause)} ";
+                }
+
+                return string.Concat(selectClause, whereClause, orderbyClause);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception.ToString());
+                return null;
+            }
+        }
+
         /// <summary>
         /// whether translating search options or others
         /// </summary>
@@ -25,7 +102,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <summary>s
         /// Gets the formatter to format the query
         /// </summary>
-        public SQLQueryFormatter QueryFormatter { get; private set; }
+        private SQLQueryFormatter QueryFormatter { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ODataNodeToStringBuilder"/> class
@@ -41,39 +118,6 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         private ODataNodeToStringBuilder()
         {
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="queryBuilder"></param>
-        /// <param name="odataQueryOptions"></param>
-        /// <returns></returns>
-        public string Translate(ODataQueryOptions odataQueryOptions, string typeString, ref FeedOptions feedOptions)
-        {
-            try
-            {
-                var orderbyClause = odataQueryOptions?.OrderBy?.OrderByClause == null ? string.Empty : string.Format("{0} {1} ", Constants.SQLOrderBySymbol, this.TranslateOrderByClause(odataQueryOptions.OrderBy.OrderByClause));
-                var typeFilter = string.Concat("WHERE c._t = '", typeString.ToUpper(), "' ");
-                var whereClause = odataQueryOptions?.Filter?.FilterClause == null ? typeFilter : string.Format("{0}{1} {2} ", typeFilter, Constants.SQLAndSymbol, this.TranslateFilterClause(odataQueryOptions.Filter.FilterClause));
-                if (odataQueryOptions?.Top?.Value > 0)
-                {
-                    feedOptions.MaxItemCount = odataQueryOptions.Top.Value;
-                }
-
-                return string.Format("{0} {1} {2} {3} {4}{5}",
-                    Constants.SQLSelectSymbol,
-                    Constants.SQLAsteriskSymbol,
-                    Constants.SQLFromSymbol,
-                    Constants.SQLFieldNameSymbol[0],
-                    whereClause,
-                    orderbyClause);
-            }
-            catch (Exception exception)
-            {
-                return string.Empty;
-            }
         }
 
         /// <summary>

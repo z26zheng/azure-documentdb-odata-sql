@@ -99,7 +99,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="MockDataModel\MockOpenType.cs" />
-    <Compile Include="ODataToSqlTests.cs" />
+    <Compile Include="ODataToSqlSamples.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
