@@ -1,5 +1,8 @@
 ﻿namespace Microsoft.Azure.Documents.OData.Sql
 {
+    /// <summary>
+    /// string formmater for OData to Sql converter
+    /// </summary>
     public class SQLQueryFormatter : QueryFormatterBase
     {
         /// <summary>

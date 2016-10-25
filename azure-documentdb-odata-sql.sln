@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azure-documentdb-odata-sql", "azure-documentdb-odata-sql\azure-documentdb-odata-sql.csproj", "{D59035E3-C274-4CFF-B835-F79D4FC0411C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azure-Documentdb-OData-Sql", "azure-documentdb-odata-sql\Azure-Documentdb-OData-Sql.csproj", "{D59035E3-C274-4CFF-B835-F79D4FC0411C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "azure-documentdb-odata-sql-samples", "azure-documentdb-odata-sql-samples\azure-documentdb-odata-sql-samples.csproj", "{90A696EC-295A-481B-A7C0-265089167929}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azure-Documentdb-OData-Sql-Samples", "azure-documentdb-odata-sql-samples\Azure-Documentdb-OData-Sql-Samples.csproj", "{90A696EC-295A-481B-A7C0-265089167929}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

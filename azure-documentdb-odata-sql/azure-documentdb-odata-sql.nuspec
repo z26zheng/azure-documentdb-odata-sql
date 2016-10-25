@@ -1,0 +1,40 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Microsoft.Azure.Documents.OData.Sql</id>
+    <version>2.0.0</version>
+    <authors>Ziyou Zheng</authors>
+    <owners>Microsoft Corporation</owners>
+    <projectUrl>https://github.com/z26zheng/azure-documentdb-odata-sql</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    
+    <description>
+      This library contains functionality to convert OData V4 queries into DocumentDB SQL statements.
+      Currently it supports below query mappings:
+        $select  => SELECT
+        $filter  => WHERE
+        $top     => TOP
+        $orderby => ORDER BY
+    </description>
+    
+    <releaseNotes>
+      2.0.0 Breaking changes: Simplified usage with newly introuduced class ODataToSqlTranslator
+      1.0.0 Initial release
+    </releaseNotes>
+    
+    <tags>odata documentdb sql translate convert</tags>
+    <copyright>Copyright ©2016 Microsoft Corporation</copyright>
+    <dependencies>
+      <dependency id="Microsoft.AspNet.OData" version="[5.9.0,6.0.0)"/>
+      <dependency id="Microsoft.Azure.DocumentDB" version="[1.9.5,)"/>
+      <dependency id="Microsoft.Data.OData" version="5.6.0"/>
+    </dependencies>
+  </metadata>
+  
+  <files>
+    <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.dll" target="lib\net452" />
+    <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.pdb" target="lib\net452" />
+    <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.XML" target="lib\net452" />
+  </files>
+  
+</package>

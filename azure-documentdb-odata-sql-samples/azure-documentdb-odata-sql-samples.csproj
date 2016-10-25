@@ -103,9 +103,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\azure-documentdb-odata-sql\azure-documentdb-odata-sql.csproj">
+    <ProjectReference Include="..\azure-documentdb-odata-sql\Azure-Documentdb-OData-Sql.csproj">
       <Project>{d59035e3-c274-4cff-b835-f79d4fc0411c}</Project>
-      <Name>azure-documentdb-odata-sql</Name>
+      <Name>Azure-Documentdb-OData-Sql</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -30,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Microsoft.Azure.Documents.OData.Sql.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Azure.Documents.Client, Version=1.10.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -94,13 +95,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ODataToSqlConverter\Constants.cs" />
-    <Compile Include="ODataToSqlConverter\ODataNodeToStringBuilder.cs" />
-    <Compile Include="ODataToSqlConverter\QueryFormatterBase.cs" />
-    <Compile Include="ODataToSqlConverter\SqlQueryFormatter.cs" />
+    <Compile Include="ODataToSqlTranslator\Constants.cs" />
+    <Compile Include="ODataToSqlTranslator\ODataNodeToStringBuilder.cs" />
+    <Compile Include="ODataToSqlTranslator\ODataToSqlTranslator.cs" />
+    <Compile Include="ODataToSqlTranslator\QueryFormatterBase.cs" />
+    <Compile Include="ODataToSqlTranslator\SqlQueryFormatter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="azure-documentdb-odata-sql.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

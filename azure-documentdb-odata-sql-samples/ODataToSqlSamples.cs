@@ -1,12 +1,12 @@
-﻿using Microsoft.Azure.Documents.Client;
-using Microsoft.Azure.Documents.OData.Sql;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Web.OData;
 using System.Web.OData.Builder;
 using System.Web.OData.Query;
 using System.Web.OData.Routing;
+
+using Microsoft.Azure.Documents.OData.Sql;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace azure_documentdb_odata_sql_tests
 {
@@ -50,8 +50,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE);
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE);
             Assert.AreEqual("SELECT * FROM c ", sqlQuery);
         }
 
@@ -61,8 +61,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost/User?$select=englishName, id");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE);
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE);
             Assert.AreEqual("SELECT c.englishName, c.id FROM c ", sqlQuery);
         }
 
@@ -72,8 +72,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost/User?$select=enumNumber, id");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE);
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE);
             Assert.AreEqual("SELECT c.enumNumber, c.id FROM c ", sqlQuery);
         }
 
@@ -83,8 +83,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=property ne 'str1'&$orderby=companyId desc,id asc&$top=15");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.TOP_CLAUSE);
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.TOP_CLAUSE);
             Assert.AreEqual("SELECT TOP 15 * FROM c ", sqlQuery);
         }
 
@@ -94,8 +94,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost/User?$select=p1, p2, p3&$filter=property ne 'str1'&$orderby=companyId desc,id asc&$top=15");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.TOP_CLAUSE);
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.TOP_CLAUSE);
             Assert.AreEqual("SELECT TOP 15 c.p1, c.p2, c.p3 FROM c ", sqlQuery);
         }
 
@@ -105,8 +105,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost?$filter=englishName eq 'Microsoft' and intField le 5");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
             Assert.AreEqual("WHERE c.englishName = 'Microsoft' AND c.intField <= 5 ", sqlQuery);
         }
 
@@ -116,8 +116,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost?$filter=enumNumber eq azure_documentdb_odata_sql_tests.MockEnum'ONE' and intField le 5");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
             Assert.AreEqual("WHERE c.enumNumber = 'ONE' AND c.intField <= 5 ", sqlQuery);
         }
 
@@ -127,8 +127,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost?$filter=parent/child eq 'childValue' and intField le 5");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
             Assert.AreEqual("WHERE c.parent.child = 'childValue' AND c.intField <= 5 ", sqlQuery);
         }
 
@@ -138,8 +138,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost?$filter=englishName eq 'Microsoft' and intField le 5");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE, "c.dataType = 'MockOpenType'");
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE, "c.dataType = 'MockOpenType'");
             Assert.AreEqual("WHERE c.dataType = 'MockOpenType' AND c.englishName = 'Microsoft' AND c.intField <= 5 ", sqlQuery);
         }
 
@@ -149,8 +149,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost?$filter=englishName eq 'Microsoft'");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE, "c.dataType = 'MockOpenType'");
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE, "c.dataType = 'MockOpenType'");
             Assert.AreEqual("SELECT * FROM c WHERE c.dataType = 'MockOpenType' AND c.englishName = 'Microsoft' ", sqlQuery);
         }
 
@@ -160,8 +160,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=property ne 'str1'&$orderby=companyId desc,id asc");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.ORDERBY_CLAUSE);
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ORDERBY_CLAUSE);
             Assert.AreEqual("ORDER BY c.companyId desc, c.id asc ", sqlQuery);
         }
 
@@ -171,8 +171,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=property ne 'str1'&$orderby=companyId desc,id asc");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE | TranslateOptions.ORDERBY_CLAUSE);
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE | TranslateOptions.ORDERBY_CLAUSE);
             Assert.AreEqual("SELECT * FROM c WHERE c.property != 'str1' ORDER BY c.companyId desc, c.id asc ", sqlQuery);
         }
 
@@ -182,8 +182,8 @@ namespace azure_documentdb_odata_sql_tests
             httpRequestMessage.RequestUri = new Uri("http://localhost/Post?$select=id, englishName&$filter=title eq 'title1' and property/field ne 'val' or viewedCount ge 5 and (likedCount ne 3 or enumNumber eq azure_documentdb_odata_sql_tests.MockEnum'TWO')&$orderby=_lastClientEditedDateTime asc, createdDateTime desc&$top=30");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
-            var odataSqlBuilder = new ODataNodeToStringBuilder(new SQLQueryFormatter());
-            var sqlQuery = odataSqlBuilder.Translate(oDataQueryOptions, TranslateOptions.ALL, "c._t = 'dataType'");
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL, "c._t = 'dataType'");
             Assert.AreEqual("SELECT TOP 30 c.id, c.englishName FROM c WHERE c._t = 'dataType' AND c.title = 'title1' AND c.property.field != 'val' OR c.viewedCount >= 5 AND (c.likedCount != 3 OR c.enumNumber = 'TWO') ORDER BY c._lastClientEditedDateTime asc, c.createdDateTime desc ", sqlQuery);
         }
     }

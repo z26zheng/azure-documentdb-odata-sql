@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {
+    /// <summary>
+    /// abstract class for query formatter used in <see cref="ODataNodeToStringBuilder"/>
+    /// </summary>
     public abstract class QueryFormatterBase
     {
         /// <summary>
