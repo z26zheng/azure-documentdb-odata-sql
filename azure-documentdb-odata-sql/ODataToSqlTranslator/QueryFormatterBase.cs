@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// method to translate fieldName
         /// </summary>
         /// <param name="fieldName"></param>
-        /// <returns></returns>
+        /// <returns>returns translated field</returns>
         public abstract string TranslateFieldName(string fieldName);
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         /// <param name="value">the enum value</param>
         /// <param name="nameSpace">Namespace of the enum type</param>
-        /// <returns>enumValue without the namespace</returns>
+        /// <returns>returns an enumValue without the namespace</returns>
         public abstract string TranslateEnumValue(string enumValue, string nameSpace);
 
         /// <summary>
@@ -31,7 +31,14 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         /// <param name="source">the parent field</param>
         /// <param name="edmProperty">the child field</param>
-        /// <returns>The translated source</returns>
+        /// <returns>returns translated parent and child</returns>
         public abstract string TranslateSource(string source, string edmProperty);
+
+        /// <summary>
+        /// method to convert function name
+        /// </summary>
+        /// <param name="functionName"></param>
+        /// <returns>returns a translated function name</returns>
+        public abstract string TranslateFunctionName(string functionName);
     }
 }

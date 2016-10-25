@@ -485,7 +485,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 result = string.Concat(result, string.IsNullOrEmpty(result) ? null : Constants.SymbolComma.ToString(), this.TranslateNode(queryNode));
             }
 
-            return string.Concat(functionName, Constants.SymbolOpenParen, result, Constants.SymbolClosedParen);
+            return string.Concat(QueryFormatter.TranslateFunctionName(functionName), Constants.SymbolOpenParen, result, Constants.SymbolClosedParen);
         }
 
         /// <summary>

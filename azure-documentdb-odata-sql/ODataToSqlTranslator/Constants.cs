@@ -5,7 +5,7 @@
     /// </summary>
     public static class Constants
     {
-        #region SQL Keys
+        #region SQL Clauses
 
         /// <summary>
         /// Sql "SELECT" clause
@@ -33,12 +33,22 @@
         public const string SQLOrderBySymbol = "ORDER BY";
 
         /// <summary>
+        /// Sql "UPPER" function
+        /// </summary>
+        public const string SQLUpperSymbol = "UPPER";
+
+        /// <summary>
+        /// Sql "LOWER" function
+        /// </summary>
+        public const string SQLLowerSymbol = "LOWER";
+
+        /// <summary>
         /// Sql "*" wild card
         /// </summary>
         public const string SQLAsteriskSymbol = "*";
 
         /// <summary>
-        /// 
+        /// Sql <c>"c"</c> default filed name
         /// </summary>
         public const string SQLFieldNameSymbol = "c";
 
@@ -210,6 +220,16 @@
         /// <c>"mul"</c> keyword for expressions.
         /// </summary>
         public const string KeywordMultiply = "mul";
+
+        /// <summary>
+        /// <c>"toupper"</c> keyword for expressions.
+        /// </summary>
+        public const string KeywordToUpper = "toupper";
+
+        /// <summary>
+        /// <c>"tolower"</c> keyword for expressions.
+        /// </summary>
+        public const string KeywordToLower = "tolower";
 
         /// <summary>
         /// <c>'&amp;'</c> constant to represent the concatenation of query parts.

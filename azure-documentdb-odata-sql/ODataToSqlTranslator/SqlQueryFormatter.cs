@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Azure.Documents.OData.Sql
+﻿using System;
+
+namespace Microsoft.Azure.Documents.OData.Sql
 {
     /// <summary>
     /// string formmater for OData to Sql converter
@@ -38,5 +40,24 @@
             return str.StartsWith(Constants.SQLFieldNameSymbol + Constants.SymbolDot) ? str : string.Concat(Constants.SQLFieldNameSymbol, Constants.SymbolDot, str);
         }
 
+        /// <summary>
+        /// Convert functionName to SQL format: funtionName => FUNCTIONNAME
+        /// </summary>
+        /// <param name="functionName"></param>
+        /// <returns></returns>
+        public override string TranslateFunctionName(string functionName)
+        {
+            switch (functionName)
+            {
+                case Constants.KeywordToUpper:
+                    return Constants.SQLUpperSymbol;
+
+                case Constants.KeywordToLower:
+                    return Constants.SQLLowerSymbol;
+
+                default:
+                    return functionName.ToUpper();
+            }
+        }
     }
 }
