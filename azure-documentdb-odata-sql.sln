@@ -7,6 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azure-Documentdb-OData-Sql"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azure-Documentdb-OData-Sql-Samples", "azure-documentdb-odata-sql-samples\Azure-Documentdb-OData-Sql-Samples.csproj", "{90A696EC-295A-481B-A7C0-265089167929}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4658D1F0-090D-44E1-8BFA-631A50CB59E8}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

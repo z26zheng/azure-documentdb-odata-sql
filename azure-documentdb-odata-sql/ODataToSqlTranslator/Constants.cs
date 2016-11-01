@@ -43,6 +43,21 @@
         public const string SQLLowerSymbol = "LOWER";
 
         /// <summary>
+        /// Sql "INDEX_OF" function
+        /// </summary>
+        public const string SQLIndexOfSymbol = "INDEX_OF";
+
+        /// <summary>
+        /// Sql "LTRIM" function
+        /// </summary>
+        public const string SQLLtrimSymbol = "LTRIM";
+
+        /// <summary>
+        /// Sql "RTRIM" function
+        /// </summary>
+        public const string SQLRtrimSymbol = "RTRIM";
+
+        /// <summary>
         /// Sql "*" wild card
         /// </summary>
         public const string SQLAsteriskSymbol = "*";
@@ -230,6 +245,16 @@
         /// <c>"tolower"</c> keyword for expressions.
         /// </summary>
         public const string KeywordToLower = "tolower";
+
+        /// <summary>
+        /// <c>"indexof"</c> keyword for expressions.
+        /// </summary>
+        public const string KeywordIndexOf = "indexof";
+
+        /// <summary>
+        /// <c>"trim"</c> keyword for expressions.
+        /// </summary>
+        public const string KeywordTrim = "trim";
 
         /// <summary>
         /// <c>'&amp;'</c> constant to represent the concatenation of query parts.

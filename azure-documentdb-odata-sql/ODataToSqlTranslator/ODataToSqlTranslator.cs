@@ -4,6 +4,7 @@ using System.Web.OData.Query;
 
 using Microsoft.OData.Core.UriParser;
 using Microsoft.OData.Core.UriParser.Semantic;
+using Microsoft.Azure.Documents.OData.Sql;
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {
@@ -15,22 +16,22 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <summary>
         /// translate option for Sql SELECT clause
         /// </summary>
-        SELECT_CLAUSE = 0x0001,
+        SELECT_CLAUSE = 1,
 
         /// <summary>
         /// translate option for Sql WHERE clause
         /// </summary>
-        WHERE_CLAUSE = 0x0010,
+        WHERE_CLAUSE = 1 << 1,
 
         /// <summary>
         /// translate option for Sql ORDER BY clause
         /// </summary>
-        ORDERBY_CLAUSE = 0x0100,
+        ORDERBY_CLAUSE = 1 << 2,
 
         /// <summary>
         /// translate option for sql TOP clause
         /// </summary>
-        TOP_CLAUSE = 0x1000,
+        TOP_CLAUSE = 1 << 3,
 
         /// <summary>
         /// translate option for all Sql clauses: SELECT, WHERE, ORDER BY, and TOP
@@ -100,11 +101,19 @@ namespace Microsoft.Azure.Documents.OData.Sql
             return string.Concat(selectClause, whereClause, orderbyClause);
         }
 
-        public ODataToSqlTranslator(SQLQueryFormatter sqlQueryFormatter)
+        /// <summary>
+        /// Constructor for ODataSqlTranslator
+        /// </summary>
+        /// <param name="queryFormatter">Optional QueryFormatter, if no formatter provided, a SQLQueryFormatter is used by default</param>
+        public ODataToSqlTranslator(QueryFormatterBase queryFormatter = null)
         {
-            oDataNodeToStringBuilder = new ODataNodeToStringBuilder(sqlQueryFormatter);
+            queryFormatter = queryFormatter ?? new SQLQueryFormatter();
+            oDataNodeToStringBuilder = new ODataNodeToStringBuilder(queryFormatter);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private ODataToSqlTranslator() { }
 
         /// <summary>Translates a <see cref="FilterClause"/> into a <see cref="FilterClause"/>.</summary>
@@ -134,7 +143,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         }
 
         /// <summary>
-        /// 
+        /// Visitor patterned ODataNodeToStringBuilder
         /// </summary>
         private ODataNodeToStringBuilder oDataNodeToStringBuilder { get; set; }
     }

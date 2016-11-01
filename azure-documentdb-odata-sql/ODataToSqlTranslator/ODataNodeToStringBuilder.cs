@@ -26,13 +26,13 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <summary>s
         /// Gets the formatter to format the query
         /// </summary>
-        private SQLQueryFormatter QueryFormatter { get; set; }
+        private QueryFormatterBase QueryFormatter { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ODataNodeToStringBuilder"/> class
         /// </summary>
         /// <param name="queryFormatter">the query format class</param>
-        public ODataNodeToStringBuilder(SQLQueryFormatter queryFormatter)
+        public ODataNodeToStringBuilder(QueryFormatterBase queryFormatter)
         {
             this.QueryFormatter = queryFormatter;
         }
@@ -485,7 +485,8 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 result = string.Concat(result, string.IsNullOrEmpty(result) ? null : Constants.SymbolComma.ToString(), this.TranslateNode(queryNode));
             }
 
-            return string.Concat(QueryFormatter.TranslateFunctionName(functionName), Constants.SymbolOpenParen, result, Constants.SymbolClosedParen);
+            var translatedFunctionCall = string.Concat(QueryFormatter.TranslateFunctionName(functionName), Constants.SymbolOpenParen, result, Constants.SymbolClosedParen);
+            return functionName == Constants.KeywordTrim ? $"{translatedFunctionCall}{Constants.SymbolClosedParen}" : translatedFunctionCall;
         }
 
         /// <summary>

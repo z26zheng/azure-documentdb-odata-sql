@@ -1,4 +1,4 @@
-# azure-documentdb-odata-sql
+# Microsoft.Azure.Documents.OData.Sql
 
 Converts [OData V4](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html) queries to [DocumentDB SQL](https://azure.microsoft.com/en-us/documentation/articles/documentdb-sql-query/) queries. 
 
@@ -24,7 +24,6 @@ SELECT TOP 5 c.revenue FROM c WHERE CONTAINS(c.englishName,'Limited') ORDER BY c
 ### Supported OData to DocumentDB SQL mappings:
 
 #### System Query Options::
-
 [$select](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_System_Query_Option_3) => SELECT
 
 [$filter](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_The_$filter_System) => WHERE
@@ -34,16 +33,25 @@ SELECT TOP 5 c.revenue FROM c WHERE CONTAINS(c.englishName,'Limited') ORDER BY c
 [$orderby](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_The_$select_System_1) => ORDER BY
 
 #### Built-in Query Functions
+contains()(field, 'value')	 => CONTAINS(c.field, 'value')
 
-[contains()](field, 'value') => CONTAINS(c.field, 'value')
+startswith()(field, 'value') => STARTSWITH(c.field, 'value')
 
-[startswith()](field, 'value') => STARTSWITH(c.field, 'value')
+endswith()(field, 'value')	 => ENDSWITH(c.field, 'value')
 
-[endswith()](field, 'value') => ENDSWITH(c.field, 'value')
+toupper()(field, 'value')    => UPPER(c.field, 'value')
 
-[toupper()](field, 'value') => UPPER(c.field, 'value')
+tolower()(field, 'value')    => LOWER(c.field, 'value')
 
-[tolower()](field, 'value') => LOWER(c.field, 'value')
+length()(field)              => LENGTH(c.field)
+
+indexof(field,'value')       => INDEX_OF(c.field,'value')
+          
+substring(field,idx1,idx2)   => SUBSTRING(c.field,idx1,idx2)
+ 
+trim(field)                  => LTRIM(RTRIM(c.englishName))
+
+concat(field,'value')        => CONCAT(c.englishName,'value')
 
 ## Installing
 
@@ -61,9 +69,10 @@ using Microsoft.Azure.Documents.OData.Sql;
 -You can find a complete set of examles in [ODataToSqlSamples.cs](https://github.com/z26zheng/azure-documentdb-odata-sql/blob/master/azure-documentdb-odata-sql-samples/ODataToSqlSamples.cs)-
 
 There are only two classes you need to work with in order to get the translation done: [SQLQueryFormatter](https://github.com/z26zheng/azure-documentdb-odata-sql/blob/master/azure-documentdb-odata-sql/ODataToSqlTranslator/SqlQueryFormatter.cs) and [ODataToSqlTranslator](https://github.com/z26zheng/azure-documentdb-odata-sql/blob/master/azure-documentdb-odata-sql/ODataToSqlTranslator/ODataToSqlTranslator.cs). 
-###### SQLQueryFormatter
+#### SQLQueryFormatter
 SQLQueryFormatter is where we do the property and function name translation, such as translating 'propertyName' to 'c.propertyName', or 'contains()' to 'CONTAINS()'. This class inherits from [QueryFormatterBase](https://github.com/z26zheng/azure-documentdb-odata-sql/blob/master/azure-documentdb-odata-sql/ODataToSqlTranslator/QueryFormatterBase.cs), which abstractly defines all required translations. One can derive from QueryFormatterBase to implement their own translation per need.
-###### ODataToSqlTranslator
+
+#### ODataToSqlTranslator
 ODataToSqlTranslator does the overall translation, by taking in an implementation of QueryFormatterBase. Because the specific translation is defined in QueryFormatter, the translation performs differently according to the implementation in QueryFormatter. 
 The default QueryFormatter is SQLQueryFormatter mentioned above:
 ```

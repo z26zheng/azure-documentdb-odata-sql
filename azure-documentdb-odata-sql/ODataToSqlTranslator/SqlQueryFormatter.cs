@@ -55,6 +55,12 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 case Constants.KeywordToLower:
                     return Constants.SQLLowerSymbol;
 
+                case Constants.KeywordIndexOf:
+                    return Constants.SQLIndexOfSymbol;
+
+                case Constants.KeywordTrim:
+                    return $"{Constants.SQLLtrimSymbol}{Constants.SymbolOpenParen}{Constants.SQLRtrimSymbol}";
+
                 default:
                     return functionName.ToUpper();
             }
