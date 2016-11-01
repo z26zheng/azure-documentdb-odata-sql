@@ -26,16 +26,23 @@ SELECT TOP 5 c.revenue FROM c WHERE CONTAINS(c.englishName,'Limited') ORDER BY c
 #### System Query Options::
 
 [$select](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_System_Query_Option_3) => SELECT
+
 [$filter](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_The_$filter_System) => WHERE
+
 [$top](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_The_$top_System_1) => TOP
+
 [$orderby](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_The_$select_System_1) => ORDER BY
 
 #### Built-in Query Functions
 
 [contains()](field, 'value') => CONTAINS(c.field, 'value')
+
 [startswith()](field, 'value') => STARTSWITH(c.field, 'value')
+
 [endswith()](field, 'value') => ENDSWITH(c.field, 'value')
+
 [toupper()](field, 'value') => UPPER(c.field, 'value')
+
 [tolower()](field, 'value') => LOWER(c.field, 'value')
 
 ## Installing
