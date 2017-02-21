@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.OData.UriParser;
+using System;
 using System.Linq;
 using System.Web.OData.Query;
 
-using Microsoft.OData.Core.UriParser;
-using Microsoft.OData.Core.UriParser.Semantic;
-using Microsoft.Azure.Documents.OData.Sql;
+//using Microsoft.OData.Core.UriParser;
+//using Microsoft.OData.Core.UriParser.Semantic;
+//using Microsoft.Azure.Documents.OData.Sql;
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {

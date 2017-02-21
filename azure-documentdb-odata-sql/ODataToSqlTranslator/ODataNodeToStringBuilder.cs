@@ -4,12 +4,15 @@ using System.Globalization;
 using System.Linq;
 using System.Web.OData.Query;
 
-using Microsoft.OData.Core;
-using Microsoft.OData.Core.UriParser;
-using Microsoft.OData.Core.UriParser.Semantic;
-using Microsoft.OData.Core.UriParser.TreeNodeKinds;
-using Microsoft.OData.Core.UriParser.Visitors;
+//using Microsoft.OData.Core;
+//using Microsoft.OData.Core.UriParser;
+//using Microsoft.OData.Core.UriParser.Semantic;
+//using Microsoft.OData.Core.UriParser.TreeNodeKinds;
+//using Microsoft.OData.Core.UriParser.Visitors;
 using Microsoft.OData.Edm;
+//using Microsoft.Data.OData.Query.SemanticAst;
+using Microsoft.OData.UriParser;
+using Microsoft.OData;
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {
@@ -49,7 +52,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         /// <param name="node">The node to translate.</param>
         /// <returns>The translated string.</returns>
-        public override string Visit(AllNode node)
+        public override string Visit(Microsoft.OData.UriParser.AllNode node)
         {
             string result = string.Concat(this.TranslateNode(node.Source), Constants.SymbolForwardSlash, Constants.KeywordAll, Constants.SymbolOpenParen, node.CurrentRangeVariable.Name, Constants.SymbolColon, this.TranslateNode(node.Body), Constants.SymbolClosedParen);
             return result;
@@ -161,27 +164,27 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         /// <param name="node">The node to translate.</param>
         /// <returns>The translated string of EntityCollectionCastNode.</returns>
-        public override string Visit(EntityCollectionCastNode node)
+        public override string Visit(Microsoft.OData.UriParser.CollectionResourceCastNode node)
         {
-            return this.TranslatePropertyAccess(node.Source, node.EntityItemType.Definition.ToString());
+            return this.TranslatePropertyAccess(node.Source, node.ItemStructuredType.Definition.ToString());
         }
 
-        /// <summary>
-        /// Visit an CollectionPropertyCastNode
-        /// </summary>
-        /// <param name="node">the node to visit</param>
-        /// <returns>The translated string of CollectionPropertyCastNode</returns>
-        public override string Visit(CollectionPropertyCastNode node)
-        {
-            return this.TranslatePropertyAccess(node.Source, node.CollectionType.Definition.ToString());
-        }
+        ///// <summary>
+        ///// Visit an CollectionPropertyCastNode
+        ///// </summary>
+        ///// <param name="node">the node to visit</param>
+        ///// <returns>The translated string of CollectionPropertyCastNode</returns>
+        //public override string Visit(Microsoft.OData.UriParser.CollectionResourceCastNode node)
+        //{
+        //    return this.TranslatePropertyAccess(node.Source, node.CollectionType.Definition.ToString());
+        //}
 
         /// <summary>
         /// Translates a <see cref="EntityRangeVariableReferenceNode"/> into a corresponding <see cref="string"/>.
         /// </summary>
         /// <param name="node">The node to translate.</param>
         /// <returns>The translated string.</returns>
-        public override string Visit(EntityRangeVariableReferenceNode node)
+        public override string Visit(Microsoft.OData.UriParser.ResourceRangeVariableReferenceNode  node)
         {
             if (node.Name == "$it")
             {
@@ -198,7 +201,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         /// <param name="node">The node to translate.</param>
         /// <returns>The translated string.</returns>
-        public override string Visit(NonentityRangeVariableReferenceNode node)
+        public override string Visit(Microsoft.OData.UriParser.NonResourceRangeVariableReferenceNode node)
         {
             return node.Name;
         }
@@ -208,20 +211,20 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         /// <param name="node">The node to translate.</param>
         /// <returns>The translated string.</returns>
-        public override string Visit(SingleEntityCastNode node)
+        public override string Visit(Microsoft.OData.UriParser.SingleResourceCastNode node)
         {
-            return this.TranslatePropertyAccess(node.Source, node.EntityTypeReference.Definition.ToString());
+            return this.TranslatePropertyAccess(node.Source, node.StructuredTypeReference.Definition.ToString());
         }
 
-        /// <summary>
-        /// Translates a <see cref="SingleValueCastNode"/> into a corresponding <see cref="string"/>.
-        /// </summary>
-        /// <param name="node">The node to translate.</param>
-        /// <returns>The translated string of SingleValueCastNode.</returns>
-        public override string Visit(SingleValueCastNode node)
-        {
-            return this.TranslatePropertyAccess(node.Source, node.TypeReference.Definition.ToString());
-        }
+        ///// <summary>
+        ///// Translates a <see cref="SingleValueCastNode"/> into a corresponding <see cref="string"/>.
+        ///// </summary>
+        ///// <param name="node">The node to translate.</param>
+        ///// <returns>The translated string of SingleValueCastNode.</returns>
+        //public override string Visit(Microsoft.OData.UriParser.SingleResourceCastNode node)
+        //{
+        //    return this.TranslatePropertyAccess(node.Source, node.TypeReference.Definition.ToString());
+        //}
 
         /// <summary>
         /// Translates a <see cref="SingleNavigationNode"/> into a corresponding <see cref="string"/>.
@@ -238,7 +241,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         /// <param name="node">The node to translate.</param>
         /// <returns>The translated string.</returns>
-        public override string Visit(SingleEntityFunctionCallNode node)
+        public override string Visit(SingleResourceFunctionCallNode node)
         {
             string result = node.Name;
             if (node.Source != null)
@@ -286,7 +289,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         /// <param name="node">The node to translate.</param>
         /// <returns>The translated string of EntityCollectionFunctionCallNode.</returns>
-        public override string Visit(EntityCollectionFunctionCallNode node)
+        public override string Visit(CollectionResourceFunctionCallNode node)
         {
             string result = node.Name;
             if (node.Source != null)

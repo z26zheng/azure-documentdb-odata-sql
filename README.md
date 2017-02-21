@@ -93,3 +93,4 @@ The options can be combined with bit operators such as ```(TranslateOptions.SELE
 ## Authors
 
 * **Ziyou Zheng** - Microsoft Universal Store Team -
+* **Egbert Nierop** - Free Lance developer - 

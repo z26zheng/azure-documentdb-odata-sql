@@ -7,6 +7,7 @@ using System.Web.OData.Routing;
 
 using Microsoft.Azure.Documents.OData.Sql;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Web.OData.Extensions;
 
 namespace azure_documentdb_odata_sql_tests
 {
@@ -42,6 +43,9 @@ namespace azure_documentdb_odata_sql_tests
         {
             httpRequestMessage = new HttpRequestMessage();
             httpRequestMessage.Method = HttpMethod.Get;
+            var config = new System.Web.Http.HttpConfiguration();
+            config.EnableDependencyInjection();
+            httpRequestMessage.SetConfiguration(config);
         }
 
         [TestMethod]
