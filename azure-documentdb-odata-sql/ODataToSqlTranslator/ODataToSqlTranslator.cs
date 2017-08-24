@@ -54,8 +54,8 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <returns>returns an SQL expression if successfully translated, otherwise a null string</returns>
         public string Translate(ODataQueryOptions odataQueryOptions, TranslateOptions translateOptions, string additionalWhereClause = null)
         {
-            string selectClause, whereClause, orderbyClause, topClause;
-            selectClause = whereClause = orderbyClause = topClause = string.Empty;
+            string selectClause, joinClause, whereClause, orderbyClause, topClause;
+            selectClause = joinClause = whereClause = orderbyClause = topClause = string.Empty;
 
             // SELECT CLAUSE
             if ((translateOptions & TranslateOptions.SELECT_CLAUSE) == TranslateOptions.SELECT_CLAUSE)
@@ -80,6 +80,9 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 var customWhereClause = additionalWhereClause == null
                     ? string.Empty
                     : $"{additionalWhereClause}";
+                joinClause = odataQueryOptions?.Filter?.FilterClause == null
+                   ? string.Empty
+                   : $"{this.ExtractJoinClause(odataQueryOptions.Filter.FilterClause)}";
                 whereClause = odataQueryOptions?.Filter?.FilterClause == null
                     ? string.Empty
                     : $"{this.TranslateFilterClause(odataQueryOptions.Filter.FilterClause)}";
@@ -99,7 +102,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
                     : $"{Constants.SQLOrderBySymbol} {this.TranslateOrderByClause(odataQueryOptions.OrderBy.OrderByClause)} ";
             }
 
-            return string.Concat(selectClause, whereClause, orderbyClause);
+            return string.Concat(selectClause, joinClause, whereClause, orderbyClause);
         }
 
         /// <summary>
@@ -124,6 +127,10 @@ namespace Microsoft.Azure.Documents.OData.Sql
         {
             return oDataNodeToStringBuilder.TranslateNode(filterClause.Expression);
         }
+        private string ExtractJoinClause(FilterClause filterClause)
+        {
+            return oDataNodeToStringBuilder.TranslateNode(filterClause.Expression, true);
+        }
 
         /// <summary>Translates a <see cref="OrderByClause"/> into a <see cref="OrderByClause"/>.</summary>
         /// <param name="orderByClause">The orderBy clause to translate.</param>
@@ -146,6 +153,6 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <summary>
         /// Visitor patterned ODataNodeToStringBuilder
         /// </summary>
-        private ODataNodeToStringBuilder oDataNodeToStringBuilder { get; set; }
+        private readonly ODataNodeToStringBuilder oDataNodeToStringBuilder;
     }
 }

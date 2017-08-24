@@ -49,6 +49,9 @@ namespace Microsoft.Azure.Documents.OData.Sql
         {
             switch (functionName)
             {
+                case Constants.KeywordAny:
+                case Constants.KeywordAll:
+                    return string.Empty;
                 case Constants.KeywordToUpper:
                     return Constants.SQLUpperSymbol;
 

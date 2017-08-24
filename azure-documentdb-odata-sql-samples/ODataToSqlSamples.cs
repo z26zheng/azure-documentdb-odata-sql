@@ -41,8 +41,10 @@ namespace azure_documentdb_odata_sql_tests
         [TestInitialize()]
         public void TestInitialize()
         {
-            httpRequestMessage = new HttpRequestMessage();
-            httpRequestMessage.Method = HttpMethod.Get;
+            httpRequestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get
+            };
             var config = new System.Web.Http.HttpConfiguration();
             config.EnableDependencyInjection();
             httpRequestMessage.SetConfiguration(config);
@@ -80,7 +82,16 @@ namespace azure_documentdb_odata_sql_tests
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE);
             Assert.AreEqual("SELECT c.enumNumber, c.id FROM c ", sqlQuery);
         }
+        [TestMethod]
+        public void TranslateAnySample()
+        {
+            httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=companies/any(p: p/id eq 'abc')");
+            var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE);
+            Assert.AreEqual("SELECT * FROM c JOIN a in c.companies WHERE a.id = 'abc'", sqlQuery);
+        }
         [TestMethod]
         public void TranslateSelectAllTopSample()
         {
