@@ -28,6 +28,11 @@
         public const string SQLFromSymbol = "FROM";
 
         /// <summary>
+        /// Sql JOIN IN clause
+        /// </summary>
+        public const string SQLJoinSymbol = "JOIN";
+
+        /// <summary>
         /// Sql "ORDER BY" clause
         /// </summary>
         public const string SQLOrderBySymbol = "ORDER BY";
