@@ -20,6 +20,7 @@ The above query will then be translated to DocumentDB SQL:
 ```
 SELECT TOP 5 c.revenue FROM c WHERE CONTAINS(c.englishName,'Limited') ORDER BY c.countryCode DESC 
 ```
+Note: requires  Microsoft.AspNet.OData 6.1.0.0 and .NET Framework 4.62
 
 ### Supported OData to DocumentDB SQL mappings:
 
@@ -93,4 +94,4 @@ The options can be combined with bit operators such as ```(TranslateOptions.SELE
 ## Authors
 
 * **Ziyou Zheng** - Microsoft Universal Store Team -
-* **Egbert Nierop** - Free Lance developer - 
+* **Egbert Nierop** - Free Lance developer -
