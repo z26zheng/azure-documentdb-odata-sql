@@ -85,12 +85,22 @@ namespace azure_documentdb_odata_sql_tests
         [TestMethod]
         public void TranslateAnySample()
         {
-            httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=companies/any(p: p/id eq 'abc')");
+            httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=companies/any(p: p/id eq 'abc' or p/name eq 'blaat')");
             var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c JOIN a in c.companies WHERE a.id = 'abc'", sqlQuery);
+            Assert.AreEqual("SELECT * FROM c JOIN a IN c.companies WHERE a.id = 'abc' OR a.name = 'blaat'", sqlQuery);
+        }
+        [TestMethod]
+        public void TranslateAnySampleWithMultipleClauses()
+        {
+            httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=(companies/any(p: p/id eq 'abc' or p/name eq 'blaat')) and customers/any(x: x/customer_name eq 'jaap')");
+            var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE);
+            Assert.AreEqual("SELECT * FROM c JOIN a IN c.companies JOIN b IN c.customers WHERE a.id = 'abc' OR a.name = 'blaat' AND b.customer_name = 'jaap'", sqlQuery);
         }
         [TestMethod]
         public void TranslateSelectAllTopSample()
@@ -122,7 +132,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
-            Assert.AreEqual("WHERE c.englishName = 'Microsoft' AND c.intField <= 5 ", sqlQuery);
+            Assert.AreEqual("WHERE c.englishName = 'Microsoft' AND c.intField <= 5", sqlQuery);
         }
 
         [TestMethod]
@@ -133,7 +143,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
-            Assert.AreEqual("WHERE c.enumNumber = 'ONE' AND c.intField <= 5 ", sqlQuery);
+            Assert.AreEqual("WHERE c.enumNumber = 'ONE' AND c.intField <= 5", sqlQuery);
         }
 
         [TestMethod]
@@ -144,7 +154,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
-            Assert.AreEqual("WHERE c.parent.child = 'childValue' AND c.intField <= 5 ", sqlQuery);
+            Assert.AreEqual("WHERE c.parent.child = 'childValue' AND c.intField <= 5", sqlQuery);
         }
 
         [TestMethod]
@@ -155,7 +165,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE, "c.dataType = 'MockOpenType'");
-            Assert.AreEqual("WHERE c.dataType = 'MockOpenType' AND c.englishName = 'Microsoft' AND c.intField <= 5 ", sqlQuery);
+            Assert.AreEqual("WHERE c.dataType = 'MockOpenType' AND c.englishName = 'Microsoft' AND c.intField <= 5", sqlQuery);
         }
 
         [TestMethod]
@@ -166,7 +176,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE, "c.dataType = 'MockOpenType'");
-            Assert.AreEqual("SELECT * FROM c WHERE c.dataType = 'MockOpenType' AND c.englishName = 'Microsoft' ", sqlQuery);
+            Assert.AreEqual("SELECT * FROM c WHERE c.dataType = 'MockOpenType' AND c.englishName = 'Microsoft'", sqlQuery);
         }
 
         [TestMethod]
@@ -199,7 +209,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c WHERE CONTAINS(c.englishName,'Microsoft') ", sqlQuery);
+            Assert.AreEqual("SELECT * FROM c WHERE CONTAINS(c.englishName,'Microsoft')", sqlQuery);
         }
 
         [TestMethod]
@@ -210,7 +220,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c WHERE STARTSWITH(c.englishName,'Microsoft') ", sqlQuery);
+            Assert.AreEqual("SELECT * FROM c WHERE STARTSWITH(c.englishName,'Microsoft')", sqlQuery);
         }
 
         [TestMethod]
@@ -221,7 +231,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c WHERE ENDSWITH(c.englishName,'Microsoft') ", sqlQuery);
+            Assert.AreEqual("SELECT * FROM c WHERE ENDSWITH(c.englishName,'Microsoft')", sqlQuery);
         }
 
         [TestMethod]
@@ -232,7 +242,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c WHERE UPPER(c.englishName) = 'MICROSOFT' OR LOWER(c.englishName) = 'microsoft' ", sqlQuery);
+            Assert.AreEqual("SELECT * FROM c WHERE UPPER(c.englishName) = 'MICROSOFT' OR LOWER(c.englishName) = 'microsoft'", sqlQuery);
         }
 
         [TestMethod]
@@ -243,7 +253,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c WHERE LENGTH(c.englishName) >= 10 AND LENGTH(c.englishName) < 15 ", sqlQuery);
+            Assert.AreEqual("SELECT * FROM c WHERE LENGTH(c.englishName) >= 10 AND LENGTH(c.englishName) < 15", sqlQuery);
         }
 
         [TestMethod]
@@ -254,7 +264,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c WHERE INDEX_OF(c.englishName,'soft') = 4 ", sqlQuery);
+            Assert.AreEqual("SELECT * FROM c WHERE INDEX_OF(c.englishName,'soft') = 4", sqlQuery);
         }
 
         [TestMethod]
@@ -265,7 +275,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c WHERE SUBSTRING(c.englishName,1,LENGTH(c.englishName)) = 'icrosoft' ", sqlQuery);
+            Assert.AreEqual("SELECT * FROM c WHERE SUBSTRING(c.englishName,1,LENGTH(c.englishName)) = 'icrosoft'", sqlQuery);
         }
 
         [TestMethod]
@@ -276,7 +286,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c WHERE LTRIM(RTRIM(c.englishName)) = 'Microsoft' ", sqlQuery);
+            Assert.AreEqual("SELECT * FROM c WHERE LTRIM(RTRIM(c.englishName)) = 'Microsoft'", sqlQuery);
         }
 
         [TestMethod]
@@ -287,7 +297,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c WHERE CONCAT(c.englishName,' Canada') = 'Microsoft Canada' ", sqlQuery);
+            Assert.AreEqual("SELECT * FROM c WHERE CONCAT(c.englishName,' Canada') = 'Microsoft Canada'", sqlQuery);
         }
 
         [TestMethod]

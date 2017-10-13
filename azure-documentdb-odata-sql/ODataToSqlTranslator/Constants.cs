@@ -6,7 +6,7 @@
     public static class Constants
     {
         #region SQL Clauses
-
+        public const string Delimiter = "|";
         /// <summary>
         /// Sql "SELECT" clause
         /// </summary>
@@ -32,6 +32,7 @@
         /// </summary>
         public const string SQLJoinSymbol = "JOIN";
 
+        public const string SQLInKeyword = "IN";
         /// <summary>
         /// Sql "ORDER BY" clause
         /// </summary>

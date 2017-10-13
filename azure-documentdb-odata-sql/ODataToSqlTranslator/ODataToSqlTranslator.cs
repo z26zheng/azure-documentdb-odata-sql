@@ -1,6 +1,7 @@
 ﻿using Microsoft.OData.UriParser;
 using System;
 using System.Linq;
+using System.Text;
 using System.Web.OData.Query;
 
 //using Microsoft.OData.Core.UriParser;
@@ -54,6 +55,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <returns>returns an SQL expression if successfully translated, otherwise a null string</returns>
         public string Translate(ODataQueryOptions odataQueryOptions, TranslateOptions translateOptions, string additionalWhereClause = null)
         {
+            //TODO: refactor to use a StringBuilder
             string selectClause, joinClause, whereClause, orderbyClause, topClause;
             selectClause = joinClause = whereClause = orderbyClause = topClause = string.Empty;
 
@@ -80,18 +82,20 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 var customWhereClause = additionalWhereClause == null
                     ? string.Empty
                     : $"{additionalWhereClause}";
-                joinClause = odataQueryOptions?.Filter?.FilterClause == null
-                   ? string.Empty
-                   : $"{this.ExtractJoinClause(odataQueryOptions.Filter.FilterClause)}";
+                var retVal = this.TranslateFilterClause(odataQueryOptions.Filter.FilterClause);
                 whereClause = odataQueryOptions?.Filter?.FilterClause == null
                     ? string.Empty
-                    : $"{this.TranslateFilterClause(odataQueryOptions.Filter.FilterClause)}";
+                    : retVal.Item2;
                 whereClause = (!string.IsNullOrEmpty(customWhereClause) && !string.IsNullOrEmpty(whereClause))
                     ? $"{customWhereClause} AND {whereClause}"
                     : $"{customWhereClause}{whereClause}";
                 whereClause = string.IsNullOrEmpty(whereClause)
                     ? string.Empty
-                    : $"{Constants.SQLWhereSymbol} {whereClause} ";
+                    : $"{Constants.SQLWhereSymbol} {whereClause}";
+                if (!string.IsNullOrEmpty(retVal.Item1))
+                {
+                    whereClause = string.Concat(retVal.Item1, " ", whereClause);
+                }
             }
 
             // ORDER BY CLAUSE
@@ -101,15 +105,28 @@ namespace Microsoft.Azure.Documents.OData.Sql
                     ? string.Empty
                     : $"{Constants.SQLOrderBySymbol} {this.TranslateOrderByClause(odataQueryOptions.OrderBy.OrderByClause)} ";
             }
-
-            return string.Concat(selectClause, joinClause, whereClause, orderbyClause);
+            var sb = new StringBuilder();
+            sb.Append(selectClause);
+            sb.Append(joinClause);
+            sb.Append(whereClause);
+            var sp = default(string);
+            if (!string.IsNullOrEmpty(whereClause))
+            {
+                sp = " ";
+            }
+            if (!string.IsNullOrEmpty(orderbyClause))
+            {
+                sb.Append(sp);
+                sb.Append(orderbyClause);
+            }
+            return sb.ToString();
         }
 
         /// <summary>
         /// Constructor for ODataSqlTranslator
         /// </summary>
         /// <param name="queryFormatter">Optional QueryFormatter, if no formatter provided, a SQLQueryFormatter is used by default</param>
-        public ODataToSqlTranslator(QueryFormatterBase queryFormatter = null)
+        public ODataToSqlTranslator(IQueryFormatter queryFormatter = null)
         {
             queryFormatter = queryFormatter ?? new SQLQueryFormatter();
             oDataNodeToStringBuilder = new ODataNodeToStringBuilder(queryFormatter);
@@ -123,9 +140,35 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <summary>Translates a <see cref="FilterClause"/> into a <see cref="FilterClause"/>.</summary>
         /// <param name="filterClause">The filter clause to translate.</param>
         /// <returns>The translated string.</returns>
-        private string TranslateFilterClause(FilterClause filterClause)
+        private Tuple<string, string> TranslateFilterClause(FilterClause filterClause)
         {
-            return oDataNodeToStringBuilder.TranslateNode(filterClause.Expression);
+            var tmp = oDataNodeToStringBuilder.TranslateNode(filterClause.Expression);
+            if (!string.IsNullOrEmpty(tmp) && tmp.IndexOf(Constants.Delimiter) >= 0)
+            {
+                var splited = tmp.Split(new[] { Constants.Delimiter[0] }, options:StringSplitOptions.RemoveEmptyEntries);
+                var sbJoin = new StringBuilder();
+                var sbWhere = new StringBuilder();
+                var sp = "";
+
+                foreach(var a in splited)
+                {
+                    if (a.StartsWith( Constants.SQLJoinSymbol))
+                    {
+                        sbJoin.Append(sp);
+                        sbJoin.Append(a);
+                        if (sp.Length == 0)
+                        {
+                            sp = " ";
+                        }
+                    }
+                    else
+                    {
+                        sbWhere.Append(a);
+                    }
+                }
+                return new Tuple<string, string>(sbJoin.ToString(), sbWhere.ToString());
+            }
+            return new Tuple<string, string>(null, tmp);
         }
         private string ExtractJoinClause(FilterClause filterClause)
         {

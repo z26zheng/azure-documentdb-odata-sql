@@ -34,6 +34,7 @@ Note: requires  Microsoft.AspNet.OData 6.1.0.0 and .NET Framework 4.62
 [$orderby](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_The_$select_System_1) => ORDER BY
 
 #### Built-in Query Functions
+collection/any(a: a/field op value)  => JOIN a in c.collection WHERE a.field op value
 contains()(field, 'value')	 => CONTAINS(c.field, 'value')
 
 startswith()(field, 'value') => STARTSWITH(c.field, 'value')
@@ -94,4 +95,4 @@ The options can be combined with bit operators such as ```(TranslateOptions.SELE
 ## Authors
 
 * **Ziyou Zheng** - Microsoft Universal Store Team -
-* **Egbert Nierop** - Free Lance developer -
+* **Egbert Nierop** - Free Lance developer - Added any functionality 2017 oct 13. note: all-functionality not supported.

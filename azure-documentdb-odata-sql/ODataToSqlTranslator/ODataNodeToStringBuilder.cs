@@ -7,7 +7,7 @@ using Microsoft.OData;
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {
-     /// <summary>
+    /// <summary>
     /// Build QueryNode to string Representation 
     /// </summary>
     internal class ODataNodeToStringBuilder : QueryNodeVisitor<string>
@@ -17,21 +17,16 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         private bool searchFlag;
         private bool joinClause;
-        /// <summary>
-        /// on functions like any and all, we need to maintain a static list to remember previously used items
-        /// eg. companies/any(c: c.id eq 'abcd') and persons/any(p: p.type eq 1)
-        /// </summary>
-        private readonly IDictionary<string, string> aliasList = new Dictionary<string, string>();
         /// <summary>s
         /// Gets the formatter to format the query
         /// </summary>
-        private QueryFormatterBase QueryFormatter { get; set; }
+        private IQueryFormatter QueryFormatter { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ODataNodeToStringBuilder"/> class
         /// </summary>
         /// <param name="queryFormatter">the query format class</param>
-        public ODataNodeToStringBuilder(QueryFormatterBase queryFormatter)
+        public ODataNodeToStringBuilder(IQueryFormatter queryFormatter)
         {
             this.QueryFormatter = queryFormatter;
         }
@@ -48,9 +43,10 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         /// <param name="node">The node to translate.</param>
         /// <returns>The translated string.</returns>
-        public override string Visit(Microsoft.OData.UriParser.AllNode node)
+        public override string Visit(AllNode node)
         {
-            string result = string.Concat(this.TranslateNode(node.Source, this.joinClause), Constants.SymbolForwardSlash, Constants.KeywordAll, Constants.SymbolOpenParen, node.CurrentRangeVariable.Name, Constants.SymbolColon, this.TranslateNode(node.Body, this.joinClause), Constants.SymbolClosedParen);
+            var result = string.Concat(Constants.Delimiter, this.TranslateNode(node.Source, true), Constants.Delimiter, this.TranslateNode(node.Body));
+
             return result;
         }
 
@@ -61,14 +57,15 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <returns>The translated string.</returns>
         public override string Visit(AnyNode node)
         {
-            if (node.CurrentRangeVariable == null && node.Body.Kind == QueryNodeKind.Constant)
-            {
-                return string.Concat(this.TranslateNode(node.Source, this.joinClause), Constants.SymbolForwardSlash, Constants.KeywordAny, Constants.SymbolOpenParen, Constants.SymbolClosedParen);
-            }
-            else
-            {
-                return string.Concat(this.TranslateNode(node.Source, this.joinClause), Constants.SymbolForwardSlash, Constants.KeywordAny, Constants.SymbolOpenParen, node.CurrentRangeVariable.Name, ":", this.TranslateNode(node.Body, this.joinClause), Constants.SymbolClosedParen);
-            }
+            //should return something like JOIN a in c.companies 
+            //if (node.CurrentRangeVariable == null && node.Body.Kind == QueryNodeKind.Constant)
+            //{
+            //    return string.Concat(Constants.Delimiter, this.TranslateNode(node.Source, true), Constants.SymbolForwardSlash, Constants.KeywordAny, Constants.SymbolOpenParen, Constants.SymbolClosedParen, Constants.Delimiter);
+            //}
+            //else
+            //{
+                return string.Concat(Constants.Delimiter, this.TranslateNode(node.Source, true), Constants.Delimiter,  this.TranslateNode(node.Body));
+            //}
         }
 
         /// <summary>
@@ -90,13 +87,13 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 rightNode = (rightNode as ConvertNode).Source;
             }
 
-            var left = this.TranslateNode(node.Left, this.joinClause);
+            var left = this.TranslateNode(node.Left);
             if (leftNode.Kind == QueryNodeKind.BinaryOperator && this.TranslateBinaryOperatorPriority(((BinaryOperatorNode)leftNode).OperatorKind) < this.TranslateBinaryOperatorPriority(node.OperatorKind))
             {
                 left = string.Concat(Constants.SymbolOpenParen, left, Constants.SymbolClosedParen);
             }
 
-            var right = this.TranslateNode(node.Right, this.joinClause);
+            var right = this.TranslateNode(node.Right);
             if (rightNode.Kind == QueryNodeKind.BinaryOperator && this.TranslateBinaryOperatorPriority(((BinaryOperatorNode)rightNode).OperatorKind) < this.TranslateBinaryOperatorPriority(node.OperatorKind))
             {
                 right = string.Concat(Constants.SymbolOpenParen, right, Constants.SymbolClosedParen);
@@ -152,7 +149,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <returns>The translated string.</returns>
         public override string Visit(ConvertNode node)
         {
-            return this.TranslateNode(node.Source, this.joinClause);
+            return this.TranslateNode(node.Source);
         }
 
         /// <summary>
@@ -209,18 +206,8 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <returns>The translated string.</returns>
         public override string Visit(SingleResourceCastNode node)
         {
-            return this.TranslatePropertyAccess(node.Source, node.StructuredTypeReference.Definition.ToString());
+            return this.TranslatePropertyAccess(node.Source, node.TypeReference.Definition.ToString());
         }
-
-        ///// <summary>
-        ///// Translates a <see cref="SingleValueCastNode"/> into a corresponding <see cref="string"/>.
-        ///// </summary>
-        ///// <param name="node">The node to translate.</param>
-        ///// <returns>The translated string of SingleValueCastNode.</returns>
-        //public override string Visit(Microsoft.OData.UriParser.SingleResourceCastNode node)
-        //{
-        //    return this.TranslatePropertyAccess(node.Source, node.TypeReference.Definition.ToString());
-        //}
 
         /// <summary>
         /// Translates a <see cref="SingleNavigationNode"/> into a corresponding <see cref="string"/>.
@@ -231,7 +218,25 @@ namespace Microsoft.Azure.Documents.OData.Sql
         {
             return this.TranslatePropertyAccess(node.Source, node.NavigationProperty.Name, node.NavigationSource);
         }
-
+      
+        //public override string Visit(SingleValueCastNode nodeIn)
+        //{
+        //    return base.Visit(nodeIn);
+        //}
+        //public override string Visit(SingleComplexNode nodeIn)
+        //{
+        //    return base.Visit(nodeIn);
+        //}
+        //public override string Visit(CountNode nodeIn)
+        //{
+        //    return base.Visit(nodeIn);
+        //}
+       
+        //public override string Visit(CollectionComplexNode node)
+        //{
+        //    return base.Visit(node);
+        //}
+      
         /// <summary>
         /// Translates a <see cref="SingleResourceFunctionCallNode"/> into a corresponding <see cref="string"/>.
         /// </summary>
@@ -247,7 +252,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 
             return this.TranslateFunctionCall(result, node.Parameters);
         }
-
+        
         /// <summary>
         /// Translates a <see cref="SingleValueFunctionCallNode"/> into a corresponding <see cref="string"/>.
         /// </summary>
@@ -343,7 +348,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <returns>The translated string of NamedFunctionParameterNode.</returns>
         public override string Visit(NamedFunctionParameterNode node)
         {
-            return string.Concat(node.Name, Constants.SymbolEqual, this.TranslateNode(node.Value, this.joinClause));
+            return string.Concat(node.Name, Constants.SymbolEqual, this.TranslateNode(node.Value));
         }
 
         /// <summary>
@@ -384,11 +389,11 @@ namespace Microsoft.Azure.Documents.OData.Sql
 
             if (node.Operand.Kind == QueryNodeKind.Constant || node.Operand.Kind == QueryNodeKind.SearchTerm)
             {
-                return string.Concat(result, ' ', this.TranslateNode(node.Operand, this.joinClause));
+                return string.Concat(result, ' ', this.TranslateNode(node.Operand));
             }
             else
             {
-                return string.Concat(result, Constants.SymbolOpenParen, this.TranslateNode(node.Operand, this.joinClause), Constants.SymbolClosedParen);
+                return string.Concat(result, Constants.SymbolOpenParen, this.TranslateNode(node.Operand), Constants.SymbolClosedParen);
             }
         }
 
@@ -403,16 +408,20 @@ namespace Microsoft.Azure.Documents.OData.Sql
             return levelsStr;
         }
 
+
         /// <summary>
         /// Main dispatching visit method for translating query-nodes into expressions.
         /// </summary>
         /// <param name="node">The node to visit/translate.</param>
         /// <param name="join">true if join must be extracted</param>
         /// <returns>The LINQ string resulting from visiting the node.</returns>
-        internal string TranslateNode(QueryNode node, bool join = false)
+        internal string TranslateNode(QueryNode node, bool joinClause = false)
         {
-            joinClause = join;
-            return node.Accept(this);
+
+            if (joinClause)//starting
+                this.joinClause= joinClause;
+           
+            return  node.Accept(this);
         }
 
         /// <summary>Translates a <see cref="SearchClause"/> into a <see cref="SearchClause"/>.</summary>
@@ -421,9 +430,9 @@ namespace Microsoft.Azure.Documents.OData.Sql
         internal string TranslateSearchClause(SearchClause searchClause)
         {
             this.searchFlag = true;
-            string searchStr = this.TranslateNode(searchClause.Expression, this.joinClause);
+            var searchStr = this.TranslateNode(searchClause.Expression);
             this.searchFlag = false;
-            return searchStr;
+            return  searchStr;
         }
 
         /// <summary>
@@ -440,7 +449,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 {
                     if (keyValuePair.Value != null)
                     {
-                        string tmp = this.TranslateNode(keyValuePair.Value, this.joinClause);
+                        var tmp = this.TranslateNode(keyValuePair.Value);
                         result = string.IsNullOrEmpty(tmp) ? result : string.Concat(result, string.IsNullOrEmpty(result) ? null : Constants.RequestParamsAggregator.ToString(), keyValuePair.Key, Constants.SymbolEqual, Uri.EscapeDataString(tmp));
                     }
                 }
@@ -458,15 +467,21 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <returns>The translated string.</returns>
         private string TranslatePropertyAccess(QueryNode sourceNode, string edmPropertyName, IEdmNavigationSource navigationSource = null)
         {
-            string source = this.TranslateNode(sourceNode, this.joinClause);
+            var source = this.TranslateNode(sourceNode);
 
             if (string.IsNullOrEmpty(source))
             {
-                return this.QueryFormatter.TranslateFieldName(edmPropertyName);
+                if (joinClause)
+                    return this.QueryFormatter.TranslateJoinClause(edmPropertyName);
+                else
+                    return this.QueryFormatter.TranslateFieldName(edmPropertyName);
             }
             else
             {
-                return this.QueryFormatter.TranslateSource(source, edmPropertyName);
+                if (joinClause)
+                    return this.QueryFormatter.TranslateJoinClause(source, edmPropertyName);
+                else
+                    return this.QueryFormatter.TranslateSource(source, edmPropertyName);
             }
         }
 
@@ -483,7 +498,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
             string result = string.Empty;
             foreach (QueryNode queryNode in argumentNodes)
             {
-                result = string.Concat(result, string.IsNullOrEmpty(result) ? null : Constants.SymbolComma.ToString(), this.TranslateNode(queryNode, this.joinClause));
+                result = string.Concat(result, string.IsNullOrEmpty(result) ? null : Constants.SymbolComma.ToString(), this.TranslateNode(queryNode));
             }
 
             var translatedFunctionCall = string.Concat(QueryFormatter.TranslateFunctionName(functionName), Constants.SymbolOpenParen, result, Constants.SymbolClosedParen);
