@@ -1,4 +1,5 @@
-﻿using Microsoft.OData.UriParser;
+﻿using Microsoft.Azure.Documents.Client;
+using Microsoft.OData.UriParser;
 using System;
 using System.Linq;
 using System.Text;

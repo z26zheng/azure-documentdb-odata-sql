@@ -413,7 +413,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// Main dispatching visit method for translating query-nodes into expressions.
         /// </summary>
         /// <param name="node">The node to visit/translate.</param>
-        /// <param name="join">true if join must be extracted</param>
+        /// <param name="joinClause">true if join must be extracted</param>
         /// <returns>The LINQ string resulting from visiting the node.</returns>
         internal string TranslateNode(QueryNode node, bool joinClause = false)
         {

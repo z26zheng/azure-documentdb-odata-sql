@@ -6,6 +6,9 @@
     public static class Constants
     {
         #region SQL Clauses
+        /// <summary>
+        /// used e.g. to parse and recompose a SQL string containing a JOIN clause
+        /// </summary>
         public const string Delimiter = "|";
         /// <summary>
         /// Sql "SELECT" clause
@@ -28,10 +31,12 @@
         public const string SQLFromSymbol = "FROM";
 
         /// <summary>
-        /// Sql JOIN IN clause
+        /// Sql JOIN clause
         /// </summary>
         public const string SQLJoinSymbol = "JOIN";
-
+        /// <summary>
+        /// SQL IN keyword
+        /// </summary>
         public const string SQLInKeyword = "IN";
         /// <summary>
         /// Sql "ORDER BY" clause

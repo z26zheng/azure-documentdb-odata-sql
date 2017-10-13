@@ -7,6 +7,9 @@ namespace Microsoft.Azure.Documents.OData.Sql
     /// </summary>
     public class SQLQueryFormatter : IQueryFormatter
     {
+        /// <summary>
+        /// constructor
+        /// </summary>
         public SQLQueryFormatter
             ()
         {

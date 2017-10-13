@@ -15,10 +15,10 @@
         /// <summary>
         /// method to translate enum values
         /// </summary>
-        /// <param name="value">the enum value</param>
+        /// <param name="enumValue">the enum value</param>
         /// <param name="nameSpace">Namespace of the enum type</param>
         /// <returns>returns an enumValue without the namespace</returns>
-         string TranslateEnumValue(string enumValue, string nameSpace);
+        string TranslateEnumValue(string enumValue, string nameSpace);
 
         /// <summary>
         /// method to convert parent/child field
@@ -34,7 +34,11 @@
         /// <param name="functionName"></param>
         /// <returns>returns a translated function name</returns>
         string TranslateFunctionName(string functionName);
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="joinCollection"></param>
+        /// <returns></returns>
         string TranslateJoinClause(string joinCollection);
         /// <summary>
         /// returns e.g. p:/id
