@@ -78,13 +78,13 @@ namespace Microsoft.Azure.Documents.OData.Sql
             var leftNode = node.Left;
             while (leftNode != null && leftNode.Kind == QueryNodeKind.Convert)
             {
-                leftNode = (leftNode as ConvertNode).Source;
+                leftNode = ((ConvertNode)leftNode).Source;
             }
 
             var rightNode = node.Right;
             while (rightNode != null && rightNode.Kind == QueryNodeKind.Convert)
             {
-                rightNode = (rightNode as ConvertNode).Source;
+                rightNode = ((ConvertNode)rightNode).Source;
             }
 
             var left = this.TranslateNode(node.Left);
@@ -514,6 +514,10 @@ namespace Microsoft.Azure.Documents.OData.Sql
         {
             switch (operatorKind)
             {
+                case BinaryOperatorKind.Or:
+                    return Constants.SQLOrSymbol;
+                case BinaryOperatorKind.And:
+                    return Constants.SQLAndSymbol;
                 case BinaryOperatorKind.Equal:
                     return Constants.SQLEqualSymbol;
                 case BinaryOperatorKind.NotEqual:
@@ -526,10 +530,6 @@ namespace Microsoft.Azure.Documents.OData.Sql
                     return Constants.SQLLessThanSymbol;
                 case BinaryOperatorKind.LessThanOrEqual:
                     return Constants.SQLLessThanOrEqualSymbol;
-                case BinaryOperatorKind.And:
-                    return Constants.SQLAndSymbol;
-                case BinaryOperatorKind.Or:
-                    return Constants.SQLOrSymbol;
                 default:
                     return null;
             }
