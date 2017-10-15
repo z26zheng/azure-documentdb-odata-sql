@@ -169,7 +169,7 @@
     <Compile Include="ODataToSqlTranslator\Constants.cs" />
     <Compile Include="ODataToSqlTranslator\ODataNodeToStringBuilder.cs" />
     <Compile Include="ODataToSqlTranslator\ODataToSqlTranslator.cs" />
-    <Compile Include="ODataToSqlTranslator\QueryFormatterBase.cs" />
+    <Compile Include="ODataToSqlTranslator\IQueryFormatter.cs" />
     <Compile Include="ODataToSqlTranslator\SqlQueryFormatter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

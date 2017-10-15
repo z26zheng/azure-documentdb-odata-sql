@@ -171,10 +171,6 @@ namespace Microsoft.Azure.Documents.OData.Sql
             }
             return new Tuple<string, string>(null, tmp);
         }
-        private string ExtractJoinClause(FilterClause filterClause)
-        {
-            return oDataNodeToStringBuilder.TranslateNode(filterClause.Expression, true);
-        }
 
         /// <summary>Translates a <see cref="OrderByClause"/> into a <see cref="OrderByClause"/>.</summary>
         /// <param name="orderByClause">The orderBy clause to translate.</param>

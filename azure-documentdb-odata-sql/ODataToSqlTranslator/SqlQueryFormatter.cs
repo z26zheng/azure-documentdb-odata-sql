@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.OData.Edm;
+using System;
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {
@@ -32,9 +33,15 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <param name="value">the enum value</param>
         /// <param name="nameSpace">Namespace of the enum type</param>
         /// <returns>enumValue without the namespace</returns>
-        public string TranslateEnumValue(string value, string nameSpace)
+        public string TranslateEnumValue(IEdmTypeReference enuMType, string enuMValue)
         {
-            return string.Concat(value.Substring(nameSpace.Length).Trim());
+            var success = long.TryParse(enuMValue, out long result);
+            if (!success)
+            {
+
+                return enuMValue;
+            }
+            return string.Concat(Constants.SymbolSingleQuote, enuMType.AsEnum().ToStringLiteral(result), Constants.SymbolSingleQuote);
         }
 
         /// <summary>

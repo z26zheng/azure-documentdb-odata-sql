@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Azure.Documents.OData.Sql
+﻿using Microsoft.OData.Edm;
+
+namespace Microsoft.Azure.Documents.OData.Sql
 {
     /// <summary>
     /// abstract class for query formatter used in <see cref="ODataNodeToStringBuilder"/>
@@ -18,7 +20,7 @@
         /// <param name="enumValue">the enum value</param>
         /// <param name="nameSpace">Namespace of the enum type</param>
         /// <returns>returns an enumValue without the namespace</returns>
-        string TranslateEnumValue(string enumValue, string nameSpace);
+        string TranslateEnumValue(IEdmTypeReference typeName, string value);
 
         /// <summary>
         /// method to convert parent/child field
