@@ -33,8 +33,15 @@ Note: requires  Microsoft.AspNet.OData 6.1.0.0 and .NET Framework 4.62
 
 [$orderby](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_The_$select_System_1) => ORDER BY
 
+### Built-in Operators
+Items/any(d:d/Quantity gt 100)  => JOIN a in c.Items WHERE a.Quantity > 100
+Note: If more objects in 'Items' qualify for the expression, duplicate results may result. e.g.
+SELECT  value c FROM c
+JOIN a IN c.sub
+WHERE a.v=false  might return c twice, while c exists once, because the join in 'sub' has two hits
+
 #### Built-in Query Functions
-collection/any(a: a/field op value)  => JOIN a in c.collection WHERE a.field op value
+
 contains()(field, 'value')	 => CONTAINS(c.field, 'value')
 
 startswith()(field, 'value') => STARTSWITH(c.field, 'value')

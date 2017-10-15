@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>ADCCure.Azure.Documents.OData.Sql</id>
-    <version>2.1.3</version>
+    <version>2.1.4</version>
     <authors>Ziyou Zheng, Egbert Nierop</authors>
     <owners>ADC Cure</owners>
     <projectUrl>https://github.com/egbertn/azure-documentdb-odata-sql</projectUrl>
@@ -40,6 +40,7 @@
     </description>
     
     <releaseNotes>
+      2.1.4 Improved dependency versions
       2.1.3 Added support for any. Note, 'all' not supported.
       2.0.2 Added support for functions: length(), indexof(), substring(), trim(), concat()
       2.0.1 Added support for functions: contains(), startswith(), endswith(), toupper() and tolower()
@@ -52,14 +53,13 @@
     <dependencies>
       <dependency id="Microsoft.AspNet.OData" version="[6.0.0,6.1.0)"/>
       <dependency id="Microsoft.Azure.DocumentDB" version="[1.9.5,)"/>
-      <dependency id="Microsoft.OData.Core" version="7.3.1"/>
-      <dependency id="Microsoft.OData.Edm" version="7.3.1"/>
-      <dependency id="Microsoft.Spatial" version="7.3.1" />
+      <dependency id="Microsoft.OData.Core" version="[7.0.0,7.3.1)"/>
+      <dependency id="Microsoft.OData.Edm" version="[7.0.0,7.3.1)"/>
+      <dependency id="Microsoft.Spatial" version="[7.0.0,7.3.1)" />
     </dependencies>
   </metadata>
   
   <files>
-    <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.dll" target="lib\net462" />
     <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.pdb" target="lib\net462" />
     <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.XML" target="lib\net462" />
   </files>
