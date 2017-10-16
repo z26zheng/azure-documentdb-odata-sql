@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 {
                     retVal = this.TranslateFilterClause(hasFilterClause);
                 }
-                whereClause = hasFilterClause != null
+                whereClause = hasFilterClause == null
                     ? string.Empty
                     : retVal.Item2;
                 whereClause = (!string.IsNullOrEmpty(customWhereClause) && !string.IsNullOrEmpty(whereClause))
