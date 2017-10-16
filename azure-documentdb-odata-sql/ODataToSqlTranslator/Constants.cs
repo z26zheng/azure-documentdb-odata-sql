@@ -194,6 +194,10 @@
         /// Close Square Bracket
         /// </summary>
         public const string SymbolCloseSquareBracket = "]";
+        /// <summary>
+        /// 
+        /// </summary>
+        public const string SqlValueKeyWord = "VALUE"; 
 
         /// <summary>
         /// Open Curly Bracket
