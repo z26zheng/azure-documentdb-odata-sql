@@ -17,8 +17,8 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <summary>
         /// method to translate enum values
         /// </summary>
-        /// <param name="enumValue">the enum value</param>
-        /// <param name="nameSpace">Namespace of the enum type</param>
+        /// <param name="typeName">the Odata enum type</param>
+        /// <param name="value">string value of the type a number or literal</param>
         /// <returns>returns an enumValue without the namespace</returns>
         string TranslateEnumValue(IEdmTypeReference typeName, string value);
 

@@ -83,8 +83,13 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 var customWhereClause = additionalWhereClause == null
                     ? string.Empty
                     : $"{additionalWhereClause}";
-                var retVal = this.TranslateFilterClause(odataQueryOptions.Filter.FilterClause);
-                whereClause = odataQueryOptions?.Filter?.FilterClause == null
+                var hasFilterClause = odataQueryOptions?.Filter?.FilterClause;
+                Tuple<string, string> retVal = null;
+                if (hasFilterClause != null)
+                {
+                    retVal = this.TranslateFilterClause(hasFilterClause);
+                }
+                whereClause = hasFilterClause != null
                     ? string.Empty
                     : retVal.Item2;
                 whereClause = (!string.IsNullOrEmpty(customWhereClause) && !string.IsNullOrEmpty(whereClause))

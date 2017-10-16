@@ -30,8 +30,8 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <summary>
         /// Convert value to SQL format: Namespace'enumVal' => c.enumVal
         /// </summary>
-        /// <param name="value">the enum value</param>
-        /// <param name="nameSpace">Namespace of the enum type</param>
+        /// <param name="enuMType">the enum value</param>
+        /// <param name="enuMValue">Namespace of the enum type</param>
         /// <returns>enumValue without the namespace</returns>
         public string TranslateEnumValue(IEdmTypeReference enuMType, string enuMValue)
         {
