@@ -137,11 +137,15 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 return Constants.KeywordNull;
             }
 
-            if (node.TypeReference.Definition.TypeKind == EdmTypeKind.Enum)
+            if (node.TypeReference.IsEnum())
             {
                 var specificNode = (ODataEnumValue)node.Value;
-           
+
                 return this.QueryFormatter.TranslateEnumValue(node.TypeReference, specificNode.Value);
+            }
+            else if (node.TypeReference.IsGuid())
+            {
+                return string.Format("'{0}'", node.Value);
             }
 
             return node.LiteralText;

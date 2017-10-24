@@ -136,6 +136,17 @@ namespace azure_documentdb_odata_sql_tests
         }
 
         [TestMethod]
+        public void TranslateWhereSampleWithGUID()
+        {
+            httpRequestMessage.RequestUri = new Uri("http://localhost?$filter=id eq 2ED27DF5-F505-4A06-B168-7321C6B4AD0C");
+            var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
+            Assert.AreEqual("WHERE c.id = '2ed27df5-f505-4a06-b168-7321c6b4ad0c'", sqlQuery);
+        }
+
+        [TestMethod]
         public void TranslateWhereWithEnumSample()
         {
             httpRequestMessage.RequestUri = new Uri("http://localhost?$filter=enumNumber eq azure_documentdb_odata_sql_tests.MockEnum'ONE' and intField le 5");
