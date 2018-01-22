@@ -143,6 +143,11 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 return this.QueryFormatter.TranslateEnumValue(node.LiteralText, (node.Value as ODataEnumValue).TypeName);
             }
 
+	        if (node.TypeReference.IsDateTimeOffset())
+	        {
+		        return $"'{node.LiteralText}'";
+	        }
+
             return node.LiteralText;
         }
 
