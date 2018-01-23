@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0"?>
 <package>
   <metadata>
-    <id>Microsoft.Azure.Documents.OData.Sql</id>
-    <version>2.0.2</version>
-    <authors>Ziyou Zheng</authors>
-    <owners>Microsoft Corporation</owners>
-    <projectUrl>https://github.com/z26zheng/azure-documentdb-odata-sql</projectUrl>
+    <id>Lambda.Azure.CosmosDb.OData.Sql</id>
+    <version>2.0.3</version>
+    <authors>Ziyou Zheng, Aboo Azarnoush</authors>
+    <owners>Microsoft Corporation, Aboo Azarnoush</owners>
+    <projectUrl>https://github.com/aboo/azure-documentdb-odata-sql</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <title>Microsoft.Azure.Documents.OData.Sql</title>
+    <title>Microsoft.Azure.CosmosDb.OData.Sql</title>
     <summary>
       This library contains functionality to convert OData V4 queries into DocumentDB SQL statements.
     </summary>
@@ -38,13 +38,14 @@
     </description>
     
     <releaseNotes>
+			2.0.3 Added support for DateTimeOffset
       2.0.2 Added support for functions: length(), indexof(), substring(), trim(), concat()
       2.0.1 Added support for functions: contains(), startswith(), endswith(), toupper() and tolower()
       2.0.0 Breaking changes: Simplified usage with newly introuduced class ODataToSqlTranslator
       1.0.0 Initial release
     </releaseNotes>
     
-    <tags>odata documentdb sql translate convert</tags>
+    <tags>odata cosmosdb sql translate convert</tags>
     <copyright>Copyright ©2016 Microsoft Corporation</copyright>
     <dependencies>
       <dependency id="Microsoft.AspNet.OData" version="[5.9.0,6.0.0)"/>
