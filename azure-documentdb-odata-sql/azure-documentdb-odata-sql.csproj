@@ -95,6 +95,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="ODataToSqlTranslator\Constants.cs" />
     <Compile Include="ODataToSqlTranslator\ODataNodeToStringBuilder.cs" />
     <Compile Include="ODataToSqlTranslator\ODataToSqlTranslator.cs" />

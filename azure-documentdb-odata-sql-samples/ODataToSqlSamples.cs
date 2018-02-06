@@ -318,5 +318,93 @@ namespace azure_documentdb_odata_sql_tests
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
 			Assert.AreEqual("SELECT * FROM c WHERE c.startTime < '2018-01-08T03:29:00Z' ", sqlQuery);
 		}
+
+		[TestMethod]
+		public void TranslateAny_WhenAnyTargetingAListProperty()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(t: t eq 'tag1')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c WHERE ARRAY_CONTAINS(c.tags,'tag1') ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAny_WhenAnyTargetingAListPropertyWithVariableNamedAsX()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(x: x eq 'tag1')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c WHERE ARRAY_CONTAINS(c.tags,'tag1') ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAny_WhenAnyTargetingAListPropertyWithVariableHavingNoSpace()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(x:x eq 'tag1')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c WHERE ARRAY_CONTAINS(c.tags,'tag1') ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAny_WhenAnyTargetingAListPropertyWithVariableNameMoreThanPneLetter()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(tag: tag eq 'tag1')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c WHERE ARRAY_CONTAINS(c.tags,'tag1') ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAny_WhenAnyTargetingAListOfIntProperty()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=points/any(t: t eq 1)");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c WHERE ARRAY_CONTAINS(c.points,1) ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAny_WhenAnyTargetingAListOfEnumProperty()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=enumNumbers/any(t: t eq azure_documentdb_odata_sql_tests.MockEnum'ONE')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c WHERE ARRAY_CONTAINS(c.enumNumbers,'ONE') ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAny_WhenThereAreTwoAnyInTheFilter()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(t: t eq 'tag1') and tags/any(t: t eq 'tag2')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c WHERE ARRAY_CONTAINS(c.tags,'tag1') AND ARRAY_CONTAINS(c.tags,'tag2') ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAny_WhenThereAreThreeAnyInTheFilter()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(t: t eq 'tag1') and tags/any(t: t eq 'tag2') and tags/any(t: t eq 'tag3')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c WHERE ARRAY_CONTAINS(c.tags,'tag1') AND ARRAY_CONTAINS(c.tags,'tag2') AND ARRAY_CONTAINS(c.tags,'tag3') ", sqlQuery);
+		}
 	}
 }

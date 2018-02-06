@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.OData.Query;
 
 using Microsoft.OData.Core.UriParser;
 using Microsoft.OData.Core.UriParser.Semantic;
 using Microsoft.Azure.Documents.OData.Sql;
+using Microsoft.Azure.Documents.OData.Sql.Extensions;
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {
@@ -121,7 +123,9 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// <returns>The translated string.</returns>
 		private string TranslateFilterClause(FilterClause filterClause)
 		{
-			return oDataNodeToStringBuilder.TranslateNode(filterClause.Expression);
+			var translation = oDataNodeToStringBuilder.TranslateNode(filterClause.Expression);
+			translation = translation.FindAndTranslateAny();
+			return translation;
 		}
 
 		/// <summary>Translates a <see cref="OrderByClause"/> into a <see cref="OrderByClause"/>.</summary>

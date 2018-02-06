@@ -34,6 +34,8 @@ namespace azure_documentdb_odata_sql_tests
 		public const string EnumNumberPropertyName = "enumNumber";
 
 		public const string TagsPropertyName = "tags";
+		public const string PointsPropertyName = "points";
+		public const string EnumNumbersPropertyName = "enumNumbers";
 
 		/// <summary>
 		/// EnglishName
@@ -57,5 +59,13 @@ namespace azure_documentdb_odata_sql_tests
 		[DataMember(Name = TagsPropertyName)]
 		[JsonProperty(PropertyName = TagsPropertyName)]
 		public List<string> Tags { get; set; }
+
+		[DataMember(Name = PointsPropertyName)]
+		[JsonProperty(PropertyName = PointsPropertyName)]
+		public List<int> Points { get; set; }
+
+		[DataMember(Name = EnumNumbersPropertyName)]
+		[JsonProperty(PropertyName = EnumNumbersPropertyName)]
+		public List<MockEnum> EnumNumbers { get; set; }
 	}
 }
