@@ -84,10 +84,21 @@ namespace azure_documentdb_odata_sql_tests
 	public class Product
 	{
 		public const string NamePropertyName = "name";
+		public const string PricePropertyName = "price";
+		public const string ShippedPropertyName = "shipped";
 
 		[DataMember(Name = NamePropertyName)]
 		[JsonProperty(PropertyName = NamePropertyName)]
 		public string Name { get; set; }
+
+		[DataMember(Name = PricePropertyName)]
+		[JsonProperty(PropertyName = PricePropertyName)]
+		public int Price { get; set; }
+
+
+		[DataMember(Name = ShippedPropertyName)]
+		[JsonProperty(PropertyName = ShippedPropertyName)]
+		public bool Shipped { get; set; }
 	}
 
 	[DataContract]

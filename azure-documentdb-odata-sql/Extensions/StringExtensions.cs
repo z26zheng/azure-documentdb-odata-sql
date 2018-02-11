@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Documents.OData.Sql.Extensions
 
 		public static (string[] JoinClauses, string JoinCondition) FindAndTranslateJoin(this string translation)
 		{
-			const string anyRegEx = @"(join (.) IN ([^\/]*))\/any\((.):c\..\.([^\s]*)([^']*)('[^']*')\)";
+			const string anyRegEx = @"(join (.) IN ([^\/]*))\/any\((.):c\..\.([^\s]*)([^'\w]*)([^\)]*)\)";
 			const string clauseTemplate = "{0}.{1} {2} {3}";
 			var finalTranslation = translation;
 

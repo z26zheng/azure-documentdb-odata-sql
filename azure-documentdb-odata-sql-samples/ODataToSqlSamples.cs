@@ -426,6 +426,28 @@ namespace azure_documentdb_odata_sql_tests
 		}
 
 		[TestMethod]
+		public void TranslateAnyToJoin_WhenQueriedBasedOnChildPropertyNumber()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(p: p/price gt 10)");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c JOIN p IN c.products WHERE p.price > 10 ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAnyToJoin_WhenQueriedBasedOnChildPropertyBoolean()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(p: p/shipped eq true)");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c JOIN p IN c.products WHERE p.shipped = true ", sqlQuery);
+		}
+
+		[TestMethod]
 		public void TranslateAnyToJoin_WhenQueriedBasedOnMultipleChildProperty()
 		{
 			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(p: p/name eq 'test') and locations/any(l: l/name eq 'test2')");
