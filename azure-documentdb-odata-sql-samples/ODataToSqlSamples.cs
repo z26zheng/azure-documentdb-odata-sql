@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Net.Http;
+using System.Web.Http;
 using System.Web.OData;
 using System.Web.OData.Builder;
+using System.Web.OData.Extensions;
 using System.Web.OData.Query;
 using System.Web.OData.Routing;
 
@@ -40,8 +42,13 @@ namespace azure_documentdb_odata_sql_tests
 		[TestInitialize()]
 		public void TestInitialize()
 		{
-			httpRequestMessage = new HttpRequestMessage();
-			httpRequestMessage.Method = HttpMethod.Get;
+			httpRequestMessage = new HttpRequestMessage
+			{
+				Method = HttpMethod.Get
+			};
+			var config = new System.Web.Http.HttpConfiguration();
+			config.EnableDependencyInjection();
+			httpRequestMessage.SetConfiguration(config);
 		}
 
 		[TestMethod]
@@ -405,6 +412,39 @@ namespace azure_documentdb_odata_sql_tests
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
 			Assert.AreEqual("SELECT * FROM c WHERE ARRAY_CONTAINS(c.tags,'tag1') AND ARRAY_CONTAINS(c.tags,'tag2') AND ARRAY_CONTAINS(c.tags,'tag3') ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAnyToJoin_WhenQueriedBasedOnChildProperty()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(p: p/name eq 'test')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c JOIN p IN c.products WHERE p.name = 'test' ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAnyToJoin_WhenQueriedBasedOnMultipleChildProperty()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(p: p/name eq 'test') and locations/any(l: l/name eq 'test2')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c JOIN p IN c.products JOIN l IN c.locations WHERE p.name = 'test' AND l.name = 'test2' ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAnyToJoin_WhenQueriedBasedOnChildPropertyDifferentLetter()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(j:j/name eq 'test')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c JOIN j IN c.products WHERE j.name = 'test' ", sqlQuery);
 		}
 	}
 }

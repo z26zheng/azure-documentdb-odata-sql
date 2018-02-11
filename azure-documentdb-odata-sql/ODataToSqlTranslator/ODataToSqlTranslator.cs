@@ -2,11 +2,10 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.OData.Query;
-
-using Microsoft.OData.Core.UriParser;
-using Microsoft.OData.Core.UriParser.Semantic;
+using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.OData.Sql;
 using Microsoft.Azure.Documents.OData.Sql.Extensions;
+using Microsoft.OData.UriParser;
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {
@@ -35,10 +34,12 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// </summary>
 		TOP_CLAUSE = 1 << 3,
 
+		JOIN_CLAUSE = 1 << 4,
+
 		/// <summary>
 		/// translate option for all Sql clauses: SELECT, WHERE, ORDER BY, and TOP
 		/// </summary>
-		ALL = SELECT_CLAUSE | WHERE_CLAUSE | ORDERBY_CLAUSE | TOP_CLAUSE
+		ALL = SELECT_CLAUSE | WHERE_CLAUSE | ORDERBY_CLAUSE | TOP_CLAUSE | JOIN_CLAUSE
 	}
 
 	/// <summary>
@@ -46,6 +47,8 @@ namespace Microsoft.Azure.Documents.OData.Sql
 	/// </summary>
 	public class ODataToSqlTranslator
 	{
+		private string[] _joinClauses = new string[] { };
+
 		/// <summary>
 		/// function that takes in an <see cref="ODataQueryOptions"/>, a string representing the type to filter, and a <see cref="FeedOptions"/>
 		/// </summary>
@@ -55,8 +58,8 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// <returns>returns an SQL expression if successfully translated, otherwise a null string</returns>
 		public string Translate(ODataQueryOptions odataQueryOptions, TranslateOptions translateOptions, string additionalWhereClause = null)
 		{
-			string selectClause, whereClause, orderbyClause, topClause;
-			selectClause = whereClause = orderbyClause = topClause = string.Empty;
+			string selectClause, whereClause, orderbyClause, topClause, joinClause;
+			selectClause = whereClause = orderbyClause = topClause = joinClause = string.Empty;
 
 			// SELECT CLAUSE
 			if ((translateOptions & TranslateOptions.SELECT_CLAUSE) == TranslateOptions.SELECT_CLAUSE)
@@ -73,6 +76,12 @@ namespace Microsoft.Azure.Documents.OData.Sql
 						? "*"
 						: string.Join(", ", odataQueryOptions.SelectExpand.RawSelect.Split(',').Select(c => string.Concat("c.", c.Trim())));
 				selectClause = $"{Constants.SQLSelectSymbol} {topClause}{selectClause} {Constants.SQLFromSymbol} {Constants.SQLFieldNameSymbol} ";
+			}
+
+			// JOIN CLAUSE
+			if ((translateOptions & TranslateOptions.JOIN_CLAUSE) == TranslateOptions.JOIN_CLAUSE)
+			{
+				//joinClause = $"{Constants.SQLJoinSymbol} x {Constants.SQLInSumbol} x.x ";
 			}
 
 			// WHERE CLAUSE
@@ -100,7 +109,9 @@ namespace Microsoft.Azure.Documents.OData.Sql
 						: $"{Constants.SQLOrderBySymbol} {this.TranslateOrderByClause(odataQueryOptions.OrderBy.OrderByClause)} ";
 			}
 
-			return string.Concat(selectClause, whereClause, orderbyClause);
+			joinClause = string.Join(string.Empty, _joinClauses);
+
+			return string.Concat(selectClause, joinClause, whereClause, orderbyClause);
 		}
 
 		/// <summary>
@@ -124,6 +135,10 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		private string TranslateFilterClause(FilterClause filterClause)
 		{
 			var translation = oDataNodeToStringBuilder.TranslateNode(filterClause.Expression);
+			var result = translation.FindAndTranslateJoin();
+			translation = result.JoinCondition;
+			_joinClauses = result.JoinClauses;
+
 			translation = translation.FindAndTranslateAny();
 			return translation;
 		}
