@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// <returns>The translated string.</returns>
 		public override string Visit(CollectionNavigationNode node)
 		{
-			return this.TranslatePropertyAccess(node.Source, node.NavigationProperty.Name, node.NavigationSource);
+			return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSumbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{node.NavigationProperty.Name}";
 		}
 
 		/// <summary>

@@ -95,6 +95,7 @@ The options can be combined with bit operators such as ```(TranslateOptions.SELE
 
 ## Release Notes
 
+* 2.0.18 Added support for JOIN for entity with Id
 * 2.0.16 Added support for JOIN
 * 2.0.4 Added support for ARRAY_CONTAINS
 * 2.0.3 Added support for DateTimeOffset

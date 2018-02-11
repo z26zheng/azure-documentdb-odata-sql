@@ -1,9 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System.Linq;
 using System.Web.OData.Query;
 using Microsoft.Azure.Documents.Client;
-using Microsoft.Azure.Documents.OData.Sql;
 using Microsoft.Azure.Documents.OData.Sql.Extensions;
 using Microsoft.OData.UriParser;
 
@@ -76,12 +73,6 @@ namespace Microsoft.Azure.Documents.OData.Sql
 						? "*"
 						: string.Join(", ", odataQueryOptions.SelectExpand.RawSelect.Split(',').Select(c => string.Concat("c.", c.Trim())));
 				selectClause = $"{Constants.SQLSelectSymbol} {topClause}{selectClause} {Constants.SQLFromSymbol} {Constants.SQLFieldNameSymbol} ";
-			}
-
-			// JOIN CLAUSE
-			if ((translateOptions & TranslateOptions.JOIN_CLAUSE) == TranslateOptions.JOIN_CLAUSE)
-			{
-				//joinClause = $"{Constants.SQLJoinSymbol} x {Constants.SQLInSumbol} x.x ";
 			}
 
 			// WHERE CLAUSE

@@ -459,6 +459,28 @@ namespace azure_documentdb_odata_sql_tests
 		}
 
 		[TestMethod]
+		public void TranslateAnyToJoin_WhenChildHasFieldId()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitors/any(p: p/id eq '6a7ad0aa-678e-40f9-8cdf-03e3ab4a4106')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c JOIN p IN c.competitors WHERE p.id = '6a7ad0aa-678e-40f9-8cdf-03e3ab4a4106' ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAnyToJoin_WhenChildHasFieldIdBasedOnAnotherField()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitors/any(p: p/name eq 'test')");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT * FROM c JOIN p IN c.competitors WHERE p.name = 'test' ", sqlQuery);
+		}
+
+		[TestMethod]
 		public void TranslateAnyToJoin_WhenQueriedBasedOnChildPropertyDifferentLetter()
 		{
 			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(j:j/name eq 'test')");

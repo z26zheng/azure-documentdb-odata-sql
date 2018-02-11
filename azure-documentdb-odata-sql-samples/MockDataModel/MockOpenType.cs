@@ -38,6 +38,7 @@ namespace azure_documentdb_odata_sql_tests
 		public const string EnumNumbersPropertyName = "enumNumbers";
 		public const string ProductsPropertyName = "products";
 		public const string LocationsPropertyName = "locations";
+		public const string CompetitorsPropertyName = "competitors";
 
 		/// <summary>
 		/// EnglishName
@@ -74,10 +75,29 @@ namespace azure_documentdb_odata_sql_tests
 		[JsonProperty(PropertyName = ProductsPropertyName)]
 		public List<Product> Products { get; set; }
 
+		[DataMember(Name = CompetitorsPropertyName)]
+		[JsonProperty(PropertyName = CompetitorsPropertyName)]
+		public List<Competitor> Competitors{ get; set; }
 
 		[DataMember(Name = LocationsPropertyName)]
 		[JsonProperty(PropertyName = LocationsPropertyName)]
 		public List<Location> Locations { get; set; }
+	}
+
+	[DataContract]
+	public class Competitor
+	{
+		public const string IdPropertyName = "id";
+		public const string NamePropertyName = "name";
+
+		[DataMember(Name = IdPropertyName)]
+		[JsonProperty(PropertyName = IdPropertyName)]
+		public string Id { get; set; }
+
+
+		[DataMember(Name = NamePropertyName)]
+		[JsonProperty(PropertyName = NamePropertyName)]
+		public string Name { get; set; }
 	}
 
 	[DataContract]
