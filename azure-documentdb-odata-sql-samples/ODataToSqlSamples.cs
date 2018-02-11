@@ -422,7 +422,7 @@ namespace azure_documentdb_odata_sql_tests
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-			Assert.AreEqual("SELECT * FROM c JOIN p IN c.products WHERE p.name = 'test' ", sqlQuery);
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN p IN c.products WHERE p.name = 'test' ", sqlQuery);
 		}
 
 		[TestMethod]
@@ -433,7 +433,7 @@ namespace azure_documentdb_odata_sql_tests
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-			Assert.AreEqual("SELECT * FROM c JOIN p IN c.products WHERE p.price > 10 ", sqlQuery);
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN p IN c.products WHERE p.price > 10 ", sqlQuery);
 		}
 
 		[TestMethod]
@@ -444,7 +444,7 @@ namespace azure_documentdb_odata_sql_tests
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-			Assert.AreEqual("SELECT * FROM c JOIN p IN c.products WHERE p.shipped = true ", sqlQuery);
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN p IN c.products WHERE p.shipped = true ", sqlQuery);
 		}
 
 		[TestMethod]
@@ -455,7 +455,7 @@ namespace azure_documentdb_odata_sql_tests
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-			Assert.AreEqual("SELECT * FROM c JOIN p IN c.products JOIN l IN c.locations WHERE p.name = 'test' AND l.name = 'test2' ", sqlQuery);
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN p IN c.products JOIN l IN c.locations WHERE p.name = 'test' AND l.name = 'test2' ", sqlQuery);
 		}
 
 		[TestMethod]
@@ -466,7 +466,7 @@ namespace azure_documentdb_odata_sql_tests
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-			Assert.AreEqual("SELECT * FROM c JOIN p IN c.competitors WHERE p.id = '6a7ad0aa-678e-40f9-8cdf-03e3ab4a4106' ", sqlQuery);
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN p IN c.competitors WHERE p.id = '6a7ad0aa-678e-40f9-8cdf-03e3ab4a4106' ", sqlQuery);
 		}
 
 		[TestMethod]
@@ -477,7 +477,18 @@ namespace azure_documentdb_odata_sql_tests
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-			Assert.AreEqual("SELECT * FROM c JOIN p IN c.competitors WHERE p.name = 'test' ", sqlQuery);
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN p IN c.competitors WHERE p.name = 'test' ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateAnyToJoin_MixedLevelProperties()
+		{
+			httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitors/any(p: p/name eq 'test') and englishName eq 'test1'");
+			var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN p IN c.competitors WHERE p.name = 'test' AND c.englishName = 'test1' ", sqlQuery);
 		}
 
 		[TestMethod]
@@ -488,7 +499,7 @@ namespace azure_documentdb_odata_sql_tests
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-			Assert.AreEqual("SELECT * FROM c JOIN j IN c.products WHERE j.name = 'test' ", sqlQuery);
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN j IN c.products WHERE j.name = 'test' ", sqlQuery);
 		}
 	}
 }

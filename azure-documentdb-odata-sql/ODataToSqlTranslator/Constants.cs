@@ -12,6 +12,8 @@
 		/// </summary>
 		public const string SQLSelectSymbol = "SELECT";
 
+		public const string SQLValueSymbol = "VALUE";
+
 		/// <summary>
 		/// Sql "WHERE" clause
 		/// </summary>
@@ -19,7 +21,7 @@
 
 		public const string SQLJoinSymbol = "JOIN";
 
-		public const string SQLInSumbol = "IN";
+		public const string SQLInSymbol = "IN";
 
 		/// <summary>
 		/// Sql "TOP" clause

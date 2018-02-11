@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Documents.OData.Sql.Extensions
 				var value = match.Groups[7];
 
 				var finalValue = string.Format(clauseTemplate,letter, property, operand, value);
-				var join = $"{Constants.SQLJoinSymbol} {letter} {Constants.SQLInSumbol} {collection} ";
+				var join = $"{Constants.SQLJoinSymbol} {letter} {Constants.SQLInSymbol} {collection} ";
 				joinClauses.Add(join);
 				finalTranslation = finalTranslation.Replace(match.Value, finalValue);
 			}

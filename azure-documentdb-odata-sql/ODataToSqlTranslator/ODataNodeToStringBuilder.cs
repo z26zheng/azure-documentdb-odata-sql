@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// <returns>The translated string.</returns>
 		public override string Visit(CollectionNavigationNode node)
 		{
-			return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSumbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{node.NavigationProperty.Name}";
+			return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSymbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{node.NavigationProperty.Name}";
 		}
 
 		/// <summary>
@@ -386,7 +386,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 
 		public override string Visit(CollectionComplexNode nodeIn)
 		{
-			return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSumbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{nodeIn.Property.Name}";
+			return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSymbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{nodeIn.Property.Name}";
 		}
 
 		/// <summary>Translates a <see cref="LevelsClause"/> into a string.</summary>

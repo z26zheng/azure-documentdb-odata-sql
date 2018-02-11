@@ -101,6 +101,11 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			}
 
 			joinClause = string.Join(string.Empty, _joinClauses);
+			if (joinClause.Any())
+			{
+				selectClause = selectClause.Replace($"{Constants.SQLSelectSymbol} {Constants.SQLAsteriskSymbol}",
+					$"{Constants.SQLSelectSymbol} {Constants.SQLValueSymbol} {Constants.SQLFieldNameSymbol}");
+			}
 
 			return string.Concat(selectClause, joinClause, whereClause, orderbyClause);
 		}
