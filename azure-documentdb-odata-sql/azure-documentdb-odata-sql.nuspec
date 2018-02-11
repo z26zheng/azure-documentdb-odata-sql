@@ -12,54 +12,26 @@
       This library contains functionality to convert OData V4 queries into DocumentDB SQL statements.
     </summary>
     <description>
-      Currently it supports below query mappings:
-        primitive:
-          field                       => c.field
-          parent/child                => c.parent.child
-          Namespace.EnumType'enumVal' => 'enumVal'
-          
-        queries:
-          $select  => SELECT
-          $filter  => WHERE
-          $top     => TOP
-          $orderby => ORDER BY
-          
-        functions:
-          contains(field,'value')     => CONTAINS(c.field,'value')
-          startswith(field,'value')   => STARTSWITH(c.field,'value')
-          endswith(field,'value')     => ENDSWITH(c.field,'value')
-          toupper(field)              => UPPER(c.field)
-          tolower(field)              => LOWER(c.field)
-          length(field)               => LENGTH(c.field)
-          indexof(field,'value')      => INDEX_OF(c.field,'value')
-          substring(field,idx1,idx2)  => SUBSTRING(c.field,idx1,idx2)
-          trim(field)                 => LTRIM(RTRIM(c.englishName))
-          concat(field,'value')       => CONCAT(c.englishName,'value')
-					field/any(f:f eq 'value')   => ARRAY_CONTAINS(c.field,'value')
+      This packages translats oData query to CosmosDB (DocumentDB). For more information about the usage check the project site please.
     </description>
     
     <releaseNotes>
-			2.0.4 Added support for ARRAY_CONTAINS
-			2.0.3 Added support for DateTimeOffset
-      2.0.2 Added support for functions: length(), indexof(), substring(), trim(), concat()
-      2.0.1 Added support for functions: contains(), startswith(), endswith(), toupper() and tolower()
-      2.0.0 Breaking changes: Simplified usage with newly introuduced class ODataToSqlTranslator
-      1.0.0 Initial release
+    Check project site for release notes.
     </releaseNotes>
     
     <tags>odata cosmosdb sql translate convert</tags>
     <copyright>Copyright ©2016 Microsoft Corporation</copyright>
     <dependencies>
-      <dependency id="Microsoft.AspNet.OData" version="[5.9.0,6.0.0)"/>
-      <dependency id="Microsoft.Azure.DocumentDB" version="[1.9.5,)"/>
-      <dependency id="Microsoft.Data.OData" version="5.6.0"/>
+      <dependency id="Microsoft.AspNet.OData" version="6.1.0"/>
+      <dependency id="Microsoft.Azure.DocumentDB" version="1.17.0"/>
+      <dependency id="Microsoft.OData.Edm" version="7.3.1"/>
     </dependencies>
   </metadata>
   
   <files>
-    <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.dll" target="lib\net452" />
-    <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.pdb" target="lib\net452" />
-    <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.XML" target="lib\net452" />
+    <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.dll" target="lib\net462" />
+    <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.pdb" target="lib\net462" />
+    <file src="bin\Release\Microsoft.Azure.Documents.OData.Sql.XML" target="lib\net462" />
   </files>
   
 </package>
