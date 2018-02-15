@@ -90,7 +90,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c JOIN a IN c.companies WHERE a.id = 'abc' OR a.name = 'blaat'", sqlQuery);
+            Assert.AreEqual("SELECT VALUE c FROM c JOIN a IN c.companies WHERE a.id = 'abc' OR a.name = 'blaat'", sqlQuery);
         }
         [TestMethod]
         public void TranslateAnySampleWithMultipleClauses()
@@ -100,7 +100,7 @@ namespace azure_documentdb_odata_sql_tests
 
             var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE);
-            Assert.AreEqual("SELECT * FROM c JOIN a IN c.companies JOIN b IN c.customers WHERE a.id = 'abc' OR a.name = 'blaat' AND b.customer_name = 'jaap'", sqlQuery);
+            Assert.AreEqual("SELECT VALUE c FROM c JOIN a IN c.companies JOIN b IN c.customers WHERE a.id = 'abc' OR a.name = 'blaat' AND b.customer_name = 'jaap'", sqlQuery);
         }
         [TestMethod]
         public void TranslateSelectAllTopSample()
