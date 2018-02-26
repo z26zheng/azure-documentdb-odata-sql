@@ -94,7 +94,7 @@ SELECT_CLAUSE, JOIN_CLAUSE, WHERE_CLAUSE, ORDERBY_CLAUSE, TOP_CLAUSE, ALL
 The options can be combined with bit operators such as ```(TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE)```. One common usage is ```(TranslateOptions.ALL & ~TranslateOptions.TOP)```, this combination enables all translation but TOP. The reason to disable TOP is that when performing pagination, DocumentDB ignores [continuation token in FeedOptions](https://msdn.microsoft.com/en-us/library/microsoft.azure.documents.client.feedoptions.requestcontinuation.aspx) if TOP exists. Therefore, the best practice is to use ```FeedOptions``` to perform TOP operation in DocumentDB.
 
 ## Release Notes
-
+* 2.0.21 Added support for collections at deeper levels
 * 2.0.19 Added support for SELECT VALUE c
 * 2.0.18 Added support for JOIN for entity with Id
 * 2.0.16 Added support for JOIN
