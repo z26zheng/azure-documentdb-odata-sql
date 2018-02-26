@@ -39,6 +39,7 @@ namespace azure_documentdb_odata_sql_tests
 		public const string ProductsPropertyName = "products";
 		public const string LocationsPropertyName = "locations";
 		public const string CompetitorsPropertyName = "competitors";
+		public const string CompetitorPropertyName = "competitor";
 
 		/// <summary>
 		/// EnglishName
@@ -82,6 +83,10 @@ namespace azure_documentdb_odata_sql_tests
 		[DataMember(Name = LocationsPropertyName)]
 		[JsonProperty(PropertyName = LocationsPropertyName)]
 		public List<Location> Locations { get; set; }
+
+		[DataMember(Name = CompetitorPropertyName)]
+		[JsonProperty(PropertyName = CompetitorPropertyName)]
+		public Competitor Competitor { get; set; }
 	}
 
 	[DataContract]
@@ -89,6 +94,9 @@ namespace azure_documentdb_odata_sql_tests
 	{
 		public const string IdPropertyName = "id";
 		public const string NamePropertyName = "name";
+		public const string LocationsPropertyName = "locations";
+		public const string CompetitorPropertyName = "competitor";
+		public const string CompetitorTwoPropertyName = "competitorTwo";
 
 		[DataMember(Name = IdPropertyName)]
 		[JsonProperty(PropertyName = IdPropertyName)]
@@ -98,6 +106,18 @@ namespace azure_documentdb_odata_sql_tests
 		[DataMember(Name = NamePropertyName)]
 		[JsonProperty(PropertyName = NamePropertyName)]
 		public string Name { get; set; }
+
+		[DataMember(Name = LocationsPropertyName)]
+		[JsonProperty(PropertyName = LocationsPropertyName)]
+		public List<Location> Locations { get; set; }
+
+		[DataMember(Name = CompetitorPropertyName)]
+		[JsonProperty(PropertyName = CompetitorPropertyName)]
+		public Competitor Competitor1 { get; set; }
+
+		[DataMember(Name = CompetitorTwoPropertyName)]
+		[JsonProperty(PropertyName = CompetitorTwoPropertyName)]
+		public Competitor Competitor2 { get; set; }
 	}
 
 	[DataContract]

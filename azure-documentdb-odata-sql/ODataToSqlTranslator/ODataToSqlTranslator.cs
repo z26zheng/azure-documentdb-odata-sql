@@ -1,6 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Web.OData.Query;
-using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.OData.Sql.Extensions;
 using Microsoft.OData.UriParser;
 
@@ -9,6 +9,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 	/// <summary>
 	/// TranslateOptions
 	/// </summary>
+	[Flags]
 	public enum TranslateOptions
 	{
 		/// <summary>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Web.OData.Query;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
@@ -386,7 +387,8 @@ namespace Microsoft.Azure.Documents.OData.Sql
 
 		public override string Visit(CollectionComplexNode nodeIn)
 		{
-			return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSymbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{nodeIn.Property.Name}";
+				var navigationPath = GetNavigationPath(nodeIn);
+				return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSymbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{navigationPath}{nodeIn.Property.Name}";
 		}
 
 		/// <summary>Translates a <see cref="LevelsClause"/> into a string.</summary>
@@ -548,6 +550,17 @@ namespace Microsoft.Azure.Documents.OData.Sql
 				default:
 					return -1;
 			}
+		}
+
+		private static string GetNavigationPath(CollectionResourceNode nodeIn)
+		{
+			if (nodeIn.NavigationSource == null)
+				return string.Empty;
+
+			var pathSegments = nodeIn.NavigationSource.Path.PathSegments.Skip(1).ToArray();
+			var path = string.Join(Constants.SymbolDot, pathSegments);
+
+			return string.IsNullOrWhiteSpace(path) ? string.Empty : $"{path}{Constants.SymbolDot}";
 		}
 	}
 }
