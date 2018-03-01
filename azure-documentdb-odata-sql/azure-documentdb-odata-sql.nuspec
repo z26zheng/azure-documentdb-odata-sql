@@ -39,9 +39,9 @@
       concat(field,'value')       => CONCAT(c.englishName,'value')
       geography'POLYGON((31.8 -5, 32 -5, 32 -4.7, 31.8 -4.7, 31.8 -5))
       => ST_INTERSECTS(c.area,{\"type\":\"Polygon\",\"coordinates\":[[[31.8,-5.0],[32.0,-5.0],[32.0,-4.7],[31.8,-4.7],[31.8,-5.0]]]})
-      geography'POINT(31.9 -4.8)') lt 100 => ST_DISTANCE(c.location,{\"type\":\"Point\",\"coordinates\":[31.9,-4.8]}) < 100
-      $count=true&$filter=englishName eq 'Microsoft' => VALUE COUNT(1) FROM c WHERE c.englishName = 'Microsoft'
-      </description>
+      geography'POINT(31.9 -4.8)') lt 100 => ST_DISTANCE(c.location,{\"type\":\"Point\",\"coordinates\":[31.9,-4.8]}) &lt; 100
+      $count=true&amp;&#36;filter=englishName eq 'Microsoft' => VALUE COUNT(1) FROM c WHERE c.englishName = 'Microsoft'
+    </description>
     
     <releaseNotes>
       2.1.12 Fix Guid translation with quotes encapsulated
@@ -59,7 +59,7 @@
     <copyright>Copyright ©2016 Microsoft Corporation, ADC Cure 2017</copyright>
     <dependencies>
       <dependency id="Microsoft.AspNet.OData" version="[6.0.0,)"/>
-      <dependebcy id="GeoJSON.Net" version="[1.1.64,)" />
+      <dependency id="GeoJSON.Net" version="[1.1.64,)" />
       <dependency id="Microsoft.Azure.DocumentDB" version="[1.9.5,)"/>
       <dependency id="Microsoft.OData.Core" version="[7.0.0,)"/>
       <dependency id="Microsoft.OData.Edm" version="[7.0.0,)"/>
