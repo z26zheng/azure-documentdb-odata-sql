@@ -6,7 +6,10 @@
     public static class Constants
     {
         #region SQL Clauses
-
+        /// <summary>
+        /// used e.g. to parse and recompose a SQL string containing a JOIN clause
+        /// </summary>
+        public const string Delimiter = "|";
         /// <summary>
         /// Sql "SELECT" clause
         /// </summary>
@@ -27,6 +30,14 @@
         /// </summary>
         public const string SQLFromSymbol = "FROM";
 
+        /// <summary>
+        /// Sql JOIN clause
+        /// </summary>
+        public const string SQLJoinSymbol = "JOIN";
+        /// <summary>
+        /// SQL IN keyword
+        /// </summary>
+        public const string SQLInKeyword = "IN";
         /// <summary>
         /// Sql "ORDER BY" clause
         /// </summary>
@@ -56,6 +67,16 @@
         /// Sql "RTRIM" function
         /// </summary>
         public const string SQLRtrimSymbol = "RTRIM";
+
+        /// <summary>
+        /// Sql "ST_DISTANCE" function
+        /// </summary>
+        public const string SQLStDistanceSymbol = "ST_DISTANCE";
+
+        /// <summary>
+        /// Sql "ST_INTERSECTS" function
+        /// </summary>
+        public const string SQLStIntersectsSymbol = "ST_INTERSECTS";
 
         /// <summary>
         /// Sql "*" wild card
@@ -183,6 +204,15 @@
         /// Close Square Bracket
         /// </summary>
         public const string SymbolCloseSquareBracket = "]";
+        /// <summary>
+        /// 
+        /// </summary>
+        public const string SqlValueKeyWord = "VALUE"; 
+
+        /// <summary>
+        /// Count
+        /// </summary>
+        public const string SqlCountKeyWord = "COUNT(1)";
 
         /// <summary>
         /// Open Curly Bracket
@@ -255,6 +285,16 @@
         /// <c>"trim"</c> keyword for expressions.
         /// </summary>
         public const string KeywordTrim = "trim";
+
+        /// <summary>
+        /// <c>"geo.distance"</c> keyword for expressions.
+        /// </summary>
+        public const string KeywordGeoDistance = "geo.distance";
+
+        /// <summary>
+        /// <c>"geo.intersects"</c> keyword for expressions.
+        /// </summary>
+        public const string KeywordGeoIntersects = "geo.intersects";
 
         /// <summary>
         /// <c>'&amp;'</c> constant to represent the concatenation of query parts.

@@ -1,18 +1,28 @@
-﻿using System;
+﻿using Microsoft.OData.Edm;
+using System;
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {
     /// <summary>
     /// string formmater for OData to Sql converter
     /// </summary>
-    public class SQLQueryFormatter : QueryFormatterBase
+    public class SQLQueryFormatter : IQueryFormatter
     {
+        /// <summary>
+        /// constructor
+        /// </summary>
+        public SQLQueryFormatter
+            ()
+        {
+            startLetter = 'a';
+            startLetter--;
+        }
         /// <summary>
         /// fieldName => c.fieldName
         /// </summary>
         /// <param name="fieldName"></param>
         /// <returns></returns>
-        public override string TranslateFieldName(string fieldName)
+        public string TranslateFieldName(string fieldName)
         {
             return string.Concat(Constants.SQLFieldNameSymbol, Constants.SymbolDot, fieldName.Trim());
         }
@@ -20,12 +30,18 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <summary>
         /// Convert value to SQL format: Namespace'enumVal' => c.enumVal
         /// </summary>
-        /// <param name="value">the enum value</param>
-        /// <param name="nameSpace">Namespace of the enum type</param>
+        /// <param name="enuMType">the enum value</param>
+        /// <param name="enuMValue">Namespace of the enum type</param>
         /// <returns>enumValue without the namespace</returns>
-        public override string TranslateEnumValue(string value, string nameSpace)
+        public string TranslateEnumValue(IEdmTypeReference enuMType, string enuMValue)
         {
-            return string.Concat(value.Substring(nameSpace.Length).Trim());
+            var success = long.TryParse(enuMValue, out long result);
+            if (!success)
+            {
+
+                return enuMValue;
+            }
+            return string.Concat(Constants.SymbolSingleQuote, enuMType.AsEnum().ToStringLiteral(result), Constants.SymbolSingleQuote);
         }
 
         /// <summary>
@@ -34,7 +50,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// <param name="source">the parent field</param>
         /// <param name="edmProperty">the child field</param>
         /// <returns>The translated source</returns>
-        public override string TranslateSource(string source, string edmProperty)
+        public string TranslateSource(string source, string edmProperty)
         {
             var str = string.Concat(source.Trim(), Constants.SymbolDot, edmProperty.Trim());
             return str.StartsWith(Constants.SQLFieldNameSymbol + Constants.SymbolDot) ? str : string.Concat(Constants.SQLFieldNameSymbol, Constants.SymbolDot, str);
@@ -45,10 +61,11 @@ namespace Microsoft.Azure.Documents.OData.Sql
         /// </summary>
         /// <param name="functionName"></param>
         /// <returns></returns>
-        public override string TranslateFunctionName(string functionName)
+        public string TranslateFunctionName(string functionName)
         {
             switch (functionName)
             {
+             
                 case Constants.KeywordToUpper:
                     return Constants.SQLUpperSymbol;
 
@@ -61,9 +78,43 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 case Constants.KeywordTrim:
                     return $"{Constants.SQLLtrimSymbol}{Constants.SymbolOpenParen}{Constants.SQLRtrimSymbol}";
 
+                case Constants.KeywordGeoDistance:
+                    return Constants.SQLStDistanceSymbol;
+
+                case Constants.KeywordGeoIntersects:
+                    return Constants.SQLStIntersectsSymbol;
+
                 default:
                     return functionName.ToUpper();
             }
+        }
+        private char startLetter;
+
+        /// <summary>
+        /// returns e.g. JOIN a IN c.companies
+        /// </summary>
+        /// <param name="joinCollection"></param>
+        public string TranslateJoinClause(string joinCollection)
+        {
+            startLetter++;
+            //startLetter becomes 'b', 'c' etc
+            return string.Concat(Constants.SQLJoinSymbol, 
+                Constants.SymbolSpace, startLetter, 
+                Constants.SymbolSpace, 
+                Constants.SQLInKeyword, 
+                Constants.SymbolSpace, 
+                Constants.SQLFieldNameSymbol, 
+                Constants.SymbolDot, joinCollection);
+
+        }
+        /// <summary>
+        /// translate any expression to a where clause
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="edmProperty"></param>
+        public string TranslateJoinClause(string source, string edmProperty)
+        {
+            return string.Concat(startLetter, Constants.SymbolDot, edmProperty);
         }
     }
 }

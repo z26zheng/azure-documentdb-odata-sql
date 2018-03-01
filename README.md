@@ -20,6 +20,7 @@ The above query will then be translated to DocumentDB SQL:
 ```
 SELECT TOP 5 c.revenue FROM c WHERE CONTAINS(c.englishName,'Limited') ORDER BY c.countryCode DESC 
 ```
+Note: requires  Microsoft.AspNet.OData 6.1.0.0 and .NET Framework 4.62
 
 ### Supported OData to DocumentDB SQL mappings:
 
@@ -32,7 +33,17 @@ SELECT TOP 5 c.revenue FROM c WHERE CONTAINS(c.englishName,'Limited') ORDER BY c
 
 [$orderby](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_The_$select_System_1) => ORDER BY
 
+[$count](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_The_$inlinecount_System) => COUNT(1)
+
+### Built-in Operators
+Items/any(d:d/Quantity gt 100)  => JOIN a in c.Items WHERE a.Quantity > 100
+Note: If more objects in 'Items' qualify for the expression, duplicate results may result. e.g.
+SELECT  value c FROM c
+JOIN a IN c.sub
+WHERE a.v=false  might return c twice, while c exists once, because the join in 'sub' has two hits
+
 #### Built-in Query Functions
+
 contains()(field, 'value')	 => CONTAINS(c.field, 'value')
 
 startswith()(field, 'value') => STARTSWITH(c.field, 'value')
@@ -52,6 +63,10 @@ substring(field,idx1,idx2)   => SUBSTRING(c.field,idx1,idx2)
 trim(field)                  => LTRIM(RTRIM(c.englishName))
 
 concat(field,'value')        => CONCAT(c.englishName,'value')
+
+geo.distance(field, geography'POINT(30 10)') => ST_DISTANCE(c.location,{"type":"Point","coordinates":[30,10]})
+
+geo.intersects(field, geography'POLYGON((30 10, 10 20, 20 40, 40 40, 30 10))') => ST_INTERSECTS(c.area,{"type":"Polygon","coordinates":[[[30,10],[10.20],[20,40],[40,40],[30,10]]]})
 
 ## Installing
 
@@ -93,3 +108,5 @@ The options can be combined with bit operators such as ```(TranslateOptions.SELE
 ## Authors
 
 * **Ziyou Zheng** - Microsoft Universal Store Team -
+* **Egbert Nierop** - Free Lance developer - Added any functionality 2017 oct 13. note: all-functionality not supported.
+* **ntanaka** - Added $count, geography'POINT and geography'POLYGON( translations
