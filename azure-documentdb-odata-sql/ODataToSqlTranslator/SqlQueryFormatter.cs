@@ -78,6 +78,12 @@ namespace Microsoft.Azure.Documents.OData.Sql
                 case Constants.KeywordTrim:
                     return $"{Constants.SQLLtrimSymbol}{Constants.SymbolOpenParen}{Constants.SQLRtrimSymbol}";
 
+                case Constants.KeywordGeoDistance:
+                    return Constants.SQLStDistanceSymbol;
+
+                case Constants.KeywordGeoIntersects:
+                    return Constants.SQLStIntersectsSymbol;
+
                 default:
                     return functionName.ToUpper();
             }

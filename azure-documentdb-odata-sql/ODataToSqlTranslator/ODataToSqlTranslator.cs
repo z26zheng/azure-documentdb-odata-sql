@@ -90,21 +90,27 @@ namespace Microsoft.Azure.Documents.OData.Sql
             // SELECT CLAUSE
             if ((translateOptions & TranslateOptions.SELECT_CLAUSE) == TranslateOptions.SELECT_CLAUSE)
             {
-                // TOP CLAUSE
-                if ((translateOptions & TranslateOptions.TOP_CLAUSE) == TranslateOptions.TOP_CLAUSE)
+                // Count CLAUSE
+                if (odataQueryOptions?.Count?.Value == true)
                 {
-                    topClause = odataQueryOptions?.Top?.Value > 0
-                        ? $"{Constants.SQLTopSymbol} {odataQueryOptions.Top.Value} "
-                        : string.Empty;
+                    selectClause = $"{Constants.SQLSelectSymbol} {Constants.SqlValueKeyWord} {Constants.SqlCountKeyWord} {Constants.SQLFromSymbol} {Constants.SQLFieldNameSymbol} ";
                 }
+                else
+                {
+                    // TOP CLAUSE
+                    if ((translateOptions & TranslateOptions.TOP_CLAUSE) == TranslateOptions.TOP_CLAUSE)
+                    {
+                        topClause = odataQueryOptions?.Top?.Value > 0
+                            ? $"{Constants.SQLTopSymbol} {odataQueryOptions.Top.Value} "
+                            : string.Empty;
+                    }
 
-                selectClause = odataQueryOptions?.SelectExpand?.RawSelect == null
-                    ? hasJoinClause ? string.Concat(Constants.SqlValueKeyWord, Constants.SymbolSpace, Constants.SQLFieldNameSymbol) : Constants.SQLAsteriskSymbol
-                    : string.Join(", ", odataQueryOptions.SelectExpand.RawSelect.Split(',').Select(c => string.Concat(Constants.SQLFieldNameSymbol, Constants.SymbolDot, c.Trim())));
-                selectClause = $"{Constants.SQLSelectSymbol} {topClause}{selectClause} {Constants.SQLFromSymbol} {Constants.SQLFieldNameSymbol} ";
+                    selectClause = odataQueryOptions?.SelectExpand?.RawSelect == null
+                        ? hasJoinClause ? string.Concat(Constants.SqlValueKeyWord, Constants.SymbolSpace, Constants.SQLFieldNameSymbol) : Constants.SQLAsteriskSymbol
+                        : string.Join(", ", odataQueryOptions.SelectExpand.RawSelect.Split(',').Select(c => string.Concat(Constants.SQLFieldNameSymbol, Constants.SymbolDot, c.Trim())));
+                    selectClause = $"{Constants.SQLSelectSymbol} {topClause}{selectClause} {Constants.SQLFromSymbol} {Constants.SQLFieldNameSymbol} ";
+                }
             }
-
-         
 
             // ORDER BY CLAUSE
             if ((translateOptions & TranslateOptions.ORDERBY_CLAUSE) == TranslateOptions.ORDERBY_CLAUSE)

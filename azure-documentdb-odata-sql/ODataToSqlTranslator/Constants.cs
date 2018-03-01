@@ -69,6 +69,16 @@
         public const string SQLRtrimSymbol = "RTRIM";
 
         /// <summary>
+        /// Sql "ST_DISTANCE" function
+        /// </summary>
+        public const string SQLStDistanceSymbol = "ST_DISTANCE";
+
+        /// <summary>
+        /// Sql "ST_INTERSECTS" function
+        /// </summary>
+        public const string SQLStIntersectsSymbol = "ST_INTERSECTS";
+
+        /// <summary>
         /// Sql "*" wild card
         /// </summary>
         public const string SQLAsteriskSymbol = "*";
@@ -200,6 +210,11 @@
         public const string SqlValueKeyWord = "VALUE"; 
 
         /// <summary>
+        /// Count
+        /// </summary>
+        public const string SqlCountKeyWord = "COUNT(1)";
+
+        /// <summary>
         /// Open Curly Bracket
         /// </summary>
         public const string SymbolOpenCurlyBracket = "{";
@@ -270,6 +285,16 @@
         /// <c>"trim"</c> keyword for expressions.
         /// </summary>
         public const string KeywordTrim = "trim";
+
+        /// <summary>
+        /// <c>"geo.distance"</c> keyword for expressions.
+        /// </summary>
+        public const string KeywordGeoDistance = "geo.distance";
+
+        /// <summary>
+        /// <c>"geo.intersects"</c> keyword for expressions.
+        /// </summary>
+        public const string KeywordGeoIntersects = "geo.intersects";
 
         /// <summary>
         /// <c>'&amp;'</c> constant to represent the concatenation of query parts.
