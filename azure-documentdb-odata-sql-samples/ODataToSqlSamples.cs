@@ -321,5 +321,38 @@ namespace azure_documentdb_odata_sql_tests
             var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL, "c._t = 'dataType'");
             Assert.AreEqual("SELECT TOP 30 c.id, c.englishName FROM c WHERE c._t = 'dataType' AND c.title = 'title1' AND c.property.field != 'val' OR c.viewedCount >= 5 AND (c.likedCount != 3 OR c.enumNumber = 'TWO') ORDER BY c._lastClientEditedDateTime ASC, c.createdDateTime DESC ", sqlQuery);
         }
+
+        [TestMethod]
+        public void TranslateCountSample()
+        {
+            httpRequestMessage.RequestUri = new Uri("http://localhost/User?$count=true&$filter=englishName eq 'Microsoft'");
+            var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE);
+            Assert.AreEqual("SELECT VALUE COUNT(1) FROM c WHERE c.englishName = 'Microsoft'", sqlQuery);
+        }
+
+        [TestMethod]
+        public void TranslateGeoDistanceSample()
+        {
+            httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=geo.distance(location, geography'POINT(31.9 -4.8)') lt 100");
+            var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+            Assert.AreEqual("SELECT * FROM c WHERE ST_DISTANCE(c.location,{\"type\":\"Point\",\"coordinates\":[31.9,-4.8]}) < 100", sqlQuery);
+        }
+
+        [TestMethod]
+        public void TranslateGeoIntersectsSample()
+        {
+            httpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=geo.intersects(area, geography'POLYGON((31.8 -5, 32 -5, 32 -4.7, 31.8 -4.7, 31.8 -5))')");
+            var oDataQueryOptions = new ODataQueryOptions(oDataQueryContext, httpRequestMessage);
+
+            var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+            var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+            Assert.AreEqual("SELECT * FROM c WHERE ST_INTERSECTS(c.area,{\"type\":\"Polygon\",\"coordinates\":[[[31.8,-5.0],[32.0,-5.0],[32.0,-4.7],[31.8,-4.7],[31.8,-5.0]]]})", sqlQuery);
+        }
     }
 }

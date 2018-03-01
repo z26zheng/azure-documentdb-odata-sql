@@ -33,6 +33,8 @@ Note: requires  Microsoft.AspNet.OData 6.1.0.0 and .NET Framework 4.62
 
 [$orderby](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_The_$select_System_1) => ORDER BY
 
+[$count](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part1-protocol/odata-v4.0-errata03-os-part1-protocol-complete.html#_The_$inlinecount_System) => COUNT(1)
+
 ### Built-in Operators
 Items/any(d:d/Quantity gt 100)  => JOIN a in c.Items WHERE a.Quantity > 100
 Note: If more objects in 'Items' qualify for the expression, duplicate results may result. e.g.
@@ -61,6 +63,10 @@ substring(field,idx1,idx2)   => SUBSTRING(c.field,idx1,idx2)
 trim(field)                  => LTRIM(RTRIM(c.englishName))
 
 concat(field,'value')        => CONCAT(c.englishName,'value')
+
+geo.distance(field, geography'POINT(30 10)') => ST_DISTANCE(c.location,{"type":"Point","coordinates":[30,10]})
+
+geo.intersects(field, geography'POLYGON((30 10, 10 20, 20 40, 40 40, 30 10))') => ST_INTERSECTS(c.area,{"type":"Polygon","coordinates":[[[30,10],[10.20],[20,40],[40,40],[30,10]]]})
 
 ## Installing
 

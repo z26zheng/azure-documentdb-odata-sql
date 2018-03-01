@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using GeoJSON.Net.Geometry;
 using Microsoft.OData.Edm;
 using Microsoft.OData.UriParser;
 using Microsoft.OData;
+using Microsoft.Spatial;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {
@@ -146,6 +149,62 @@ namespace Microsoft.Azure.Documents.OData.Sql
             else if (node.TypeReference.IsGuid())
             {
                 return string.Format("'{0}'", node.Value);
+            }
+            // Translate Geography
+            else if (node.TypeReference.IsGeography())
+            {
+                LineString createLineString(GeographyLineString lineString)
+                {
+                    var coordinates = new List<IPosition>();
+                    foreach (var point in lineString.Points)
+                    {
+                        if (!point.IsEmpty)
+                        {
+                            var position = new Position(point.Latitude, point.Longitude, point.Z);
+                            coordinates.Add(position);
+                        }
+                    }
+
+                    return new LineString(coordinates);
+                }
+
+                // Translates Point
+                if (node.TypeReference.PrimitiveKind() == EdmPrimitiveTypeKind.GeographyPoint)
+                {
+                    var point = node.Value as GeographyPoint;
+                    if (point?.IsEmpty == false)
+                    {
+                        var position = new Position(point.Latitude, point.Longitude, point.Z);
+                        return JsonConvert.SerializeObject(new Point(position));
+                    }
+                }
+                // Translate Polygon
+                else if (node.TypeReference.PrimitiveKind() == EdmPrimitiveTypeKind.GeographyPolygon)
+                {
+                    var polygon = node.Value as GeographyPolygon;
+                    if (polygon?.IsEmpty == false)
+                    {
+                        var lineStrings = new List<LineString>();
+                        foreach (var lineString in polygon.Rings)
+                        {
+                            if (!lineString.IsEmpty)
+                            {
+                                lineStrings.Add(createLineString(lineString));
+                            }
+                        }
+
+                        return JsonConvert.SerializeObject(new Polygon(lineStrings));
+                    }
+                }
+                // Translate LineString
+                else if (node.TypeReference.PrimitiveKind() == EdmPrimitiveTypeKind.GeographyLineString)
+                {
+                    var lineString = node.Value as GeographyLineString;
+                    if (lineString?.IsEmpty == false)
+                    {
+                        return JsonConvert.SerializeObject(createLineString(lineString));
+                    }
+                }
             }
 
             return node.LiteralText;
