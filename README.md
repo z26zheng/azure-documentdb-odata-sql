@@ -109,3 +109,4 @@ The options can be combined with bit operators such as ```(TranslateOptions.SELE
 
 * **Ziyou Zheng** - Microsoft Universal Store Team -
 * **Egbert Nierop** - Free Lance developer - Added any functionality 2017 oct 13. note: all-functionality not supported.
+* **ntanaka** - Added $count, geography'POINT and geography'POLYGON( translations
