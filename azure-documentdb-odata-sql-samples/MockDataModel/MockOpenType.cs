@@ -146,6 +146,7 @@ namespace azure_documentdb_odata_sql_tests
 	{
 		public const string NamePropertyName = "name";
 		public const string IdPropertyName = "id";
+		public const string LocationsPropertyName = "locations";
 
 		[DataMember(Name = IdPropertyName)]
 		[JsonProperty(PropertyName = IdPropertyName)]
@@ -154,5 +155,9 @@ namespace azure_documentdb_odata_sql_tests
 		[DataMember(Name = NamePropertyName)]
 		[JsonProperty(PropertyName = NamePropertyName)]
 		public string Name { get; set; }
+
+		[DataMember(Name = LocationsPropertyName)]
+		[JsonProperty(PropertyName = LocationsPropertyName)]
+		public List<Location> Locations { get; set; }
 	}
 }

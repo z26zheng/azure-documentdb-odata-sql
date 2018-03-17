@@ -3,6 +3,7 @@
 Converts [OData V4](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html) queries to [DocumentDB SQL](https://azure.microsoft.com/en-us/documentation/articles/documentdb-sql-query/) queries. 
 
 ## Release Notes
+* 2.0.24 Added support for one nested join with one condition for the internal join
 * 2.0.23 Added support for collection condition based on id
 * 2.0.21 Added support for collections at deeper levels
 * 2.0.19 Added support for SELECT VALUE c

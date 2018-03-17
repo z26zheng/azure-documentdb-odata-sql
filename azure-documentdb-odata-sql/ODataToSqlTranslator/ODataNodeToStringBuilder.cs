@@ -65,7 +65,15 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			}
 			else
 			{
-				return string.Concat(this.TranslateNode(node.Source), Constants.SymbolForwardSlash, Constants.KeywordAny, Constants.SymbolOpenParen, node.CurrentRangeVariable.Name, ":", this.TranslateNode(node.Body), Constants.SymbolClosedParen);
+				var source = TranslateNode(node.Source);
+				var body = TranslateNode(node.Body);
+				var variableName = node.CurrentRangeVariable.Name;
+
+				var result = string.Concat(source, Constants.SymbolForwardSlash, Constants.KeywordAny,
+					Constants.SymbolOpenParen, variableName, ":", body,
+					Constants.SymbolClosedParen);
+
+				return result;
 			}
 		}
 
@@ -388,8 +396,8 @@ namespace Microsoft.Azure.Documents.OData.Sql
 
 		public override string Visit(CollectionComplexNode nodeIn)
 		{
-				var navigationPath = GetNavigationPath(nodeIn);
-				return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSymbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{navigationPath}{nodeIn.Property.Name}";
+			var navigationPath = GetNavigationPath(nodeIn);
+			return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSymbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{navigationPath}{nodeIn.Property.Name}";
 		}
 
 		/// <summary>Translates a <see cref="LevelsClause"/> into a string.</summary>
@@ -567,7 +575,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		private static string GetNavigationPath(CollectionNavigationNode nodeIn)
 		{
 			if (nodeIn.NavigationSource == null)
-				return string.Empty;
+				return nodeIn.NavigationProperty.Name;
 
 			var pathSegments = nodeIn.NavigationSource.Path.PathSegments.Skip(1).ToArray();
 			var path = string.Join(Constants.SymbolDot, pathSegments);
