@@ -145,6 +145,11 @@ namespace azure_documentdb_odata_sql_tests
 	public class Location
 	{
 		public const string NamePropertyName = "name";
+		public const string IdPropertyName = "id";
+
+		[DataMember(Name = IdPropertyName)]
+		[JsonProperty(PropertyName = IdPropertyName)]
+		public string Id { get; set; }
 
 		[DataMember(Name = NamePropertyName)]
 		[JsonProperty(PropertyName = NamePropertyName)]

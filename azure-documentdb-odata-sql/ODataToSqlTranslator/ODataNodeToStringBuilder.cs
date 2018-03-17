@@ -110,7 +110,8 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// <returns>The translated string.</returns>
 		public override string Visit(CollectionNavigationNode node)
 		{
-			return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSymbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{node.NavigationProperty.Name}";
+			var navigationPath = GetNavigationPath(node);
+			return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSymbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{navigationPath}";
 		}
 
 		/// <summary>
@@ -561,6 +562,17 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			var path = string.Join(Constants.SymbolDot, pathSegments);
 
 			return string.IsNullOrWhiteSpace(path) ? string.Empty : $"{path}{Constants.SymbolDot}";
+		}
+
+		private static string GetNavigationPath(CollectionNavigationNode nodeIn)
+		{
+			if (nodeIn.NavigationSource == null)
+				return string.Empty;
+
+			var pathSegments = nodeIn.NavigationSource.Path.PathSegments.Skip(1).ToArray();
+			var path = string.Join(Constants.SymbolDot, pathSegments);
+
+			return string.IsNullOrWhiteSpace(path) ? string.Empty : path;
 		}
 	}
 }

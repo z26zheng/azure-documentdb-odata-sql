@@ -2,6 +2,19 @@
 
 Converts [OData V4](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html) queries to [DocumentDB SQL](https://azure.microsoft.com/en-us/documentation/articles/documentdb-sql-query/) queries. 
 
+## Release Notes
+* 2.0.23 Added support for collection condition based on id
+* 2.0.21 Added support for collections at deeper levels
+* 2.0.19 Added support for SELECT VALUE c
+* 2.0.18 Added support for JOIN for entity with Id
+* 2.0.16 Added support for JOIN
+* 2.0.4 Added support for ARRAY_CONTAINS
+* 2.0.3 Added support for DateTimeOffset
+* 2.0.2 Added support for functions: length(), indexof(), substring(), trim(), concat()
+* 2.0.1 Added support for functions: contains(), startswith(), endswith(), toupper() and tolower()
+* 2.0.0 Breaking changes: Simplified usage with newly introuduced class ODataToSqlTranslator
+* 1.0.0 Initial release
+
 ## Summary
 
 This package supports most of the intersectional functionalities provided by OData V4 and DocumentDB SQL. For example, if you have a class looks like:
@@ -93,17 +106,6 @@ SELECT_CLAUSE, JOIN_CLAUSE, WHERE_CLAUSE, ORDERBY_CLAUSE, TOP_CLAUSE, ALL
 ```
 The options can be combined with bit operators such as ```(TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE)```. One common usage is ```(TranslateOptions.ALL & ~TranslateOptions.TOP)```, this combination enables all translation but TOP. The reason to disable TOP is that when performing pagination, DocumentDB ignores [continuation token in FeedOptions](https://msdn.microsoft.com/en-us/library/microsoft.azure.documents.client.feedoptions.requestcontinuation.aspx) if TOP exists. Therefore, the best practice is to use ```FeedOptions``` to perform TOP operation in DocumentDB.
 
-## Release Notes
-* 2.0.21 Added support for collections at deeper levels
-* 2.0.19 Added support for SELECT VALUE c
-* 2.0.18 Added support for JOIN for entity with Id
-* 2.0.16 Added support for JOIN
-* 2.0.4 Added support for ARRAY_CONTAINS
-* 2.0.3 Added support for DateTimeOffset
-* 2.0.2 Added support for functions: length(), indexof(), substring(), trim(), concat()
-* 2.0.1 Added support for functions: contains(), startswith(), endswith(), toupper() and tolower()
-* 2.0.0 Breaking changes: Simplified usage with newly introuduced class ODataToSqlTranslator
-* 1.0.0 Initial release
 ## Authors
 
 * **Aboo Azarnoush** - Lambda Solutions
