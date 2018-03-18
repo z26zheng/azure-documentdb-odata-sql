@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Web.OData.Query;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Microsoft.OData.UriParser;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.Azure.Documents.OData.Sql
 {
 	/// <summary>
@@ -18,12 +17,12 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// <summary>
 		/// whether translating search options or others
 		/// </summary>
-		private bool searchFlag;
+		private bool _searchFlag;
 
 		/// <summary>s
 		/// Gets the formatter to format the query
 		/// </summary>
-		private QueryFormatterBase QueryFormatter { get; set; }
+		private QueryFormatterBase QueryFormatter { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ODataNodeToStringBuilder"/> class
@@ -31,43 +30,36 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// <param name="queryFormatter">the query format class</param>
 		public ODataNodeToStringBuilder(QueryFormatterBase queryFormatter)
 		{
-			this.QueryFormatter = queryFormatter;
+			QueryFormatter = queryFormatter;
 		}
 
 		/// <summary>
 		/// Prevents a default instance of the <see cref="ODataNodeToStringBuilder"/> class from being created
 		/// </summary>
+		// ReSharper disable once UnusedMember.Local
 		private ODataNodeToStringBuilder()
 		{
 		}
 
-		/// <summary>
-		/// Translates a <see cref="AllNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(AllNode node)
 		{
-			string result = string.Concat(this.TranslateNode(node.Source), Constants.SymbolForwardSlash, Constants.KeywordAll, Constants.SymbolOpenParen, node.CurrentRangeVariable.Name, Constants.SymbolColon, this.TranslateNode(node.Body), Constants.SymbolClosedParen);
+			string result = string.Concat(TranslateNode(node.Source), Constants.SymbolForwardSlash, Constants.KeywordAll, Constants.SymbolOpenParen, node.CurrentRangeVariable.Name, Constants.SymbolColon, TranslateNode(node.Body), Constants.SymbolClosedParen);
 			return result;
 		}
 
-		/// <summary>
-		/// Translates a <see cref="AnyNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(AnyNode node)
 		{
 			if (node.CurrentRangeVariable == null && node.Body.Kind == QueryNodeKind.Constant)
 			{
-				return string.Concat(this.TranslateNode(node.Source), Constants.SymbolForwardSlash, Constants.KeywordAny, Constants.SymbolOpenParen, Constants.SymbolClosedParen);
+				return string.Concat(TranslateNode(node.Source), Constants.SymbolForwardSlash, Constants.KeywordAny, Constants.SymbolOpenParen, Constants.SymbolClosedParen);
 			}
 			else
 			{
 				var source = TranslateNode(node.Source);
 				var body = TranslateNode(node.Body);
-				var variableName = node.CurrentRangeVariable.Name;
+				var variableName = node.CurrentRangeVariable?.Name;
 
 				var result = string.Concat(source, Constants.SymbolForwardSlash, Constants.KeywordAny,
 					Constants.SymbolOpenParen, variableName, ":", body,
@@ -77,66 +69,50 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			}
 		}
 
-		/// <summary>
-		/// Translates a <see cref="BinaryOperatorNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(BinaryOperatorNode node)
 		{
 			var leftNode = node.Left;
 			while (leftNode != null && leftNode.Kind == QueryNodeKind.Convert)
 			{
-				leftNode = (leftNode as ConvertNode).Source;
+				leftNode = ((ConvertNode)leftNode).Source;
 			}
 
 			var rightNode = node.Right;
 			while (rightNode != null && rightNode.Kind == QueryNodeKind.Convert)
 			{
-				rightNode = (rightNode as ConvertNode).Source;
+				rightNode = ((ConvertNode)rightNode).Source;
 			}
 
-			var left = this.TranslateNode(node.Left);
-			if (leftNode.Kind == QueryNodeKind.BinaryOperator && this.TranslateBinaryOperatorPriority(((BinaryOperatorNode)leftNode).OperatorKind) < this.TranslateBinaryOperatorPriority(node.OperatorKind))
+			var left = TranslateNode(node.Left);
+			if (leftNode?.Kind == QueryNodeKind.BinaryOperator && TranslateBinaryOperatorPriority(((BinaryOperatorNode)leftNode).OperatorKind) < TranslateBinaryOperatorPriority(node.OperatorKind))
 			{
 				left = string.Concat(Constants.SymbolOpenParen, left, Constants.SymbolClosedParen);
 			}
 
-			var right = this.TranslateNode(node.Right);
-			if (rightNode.Kind == QueryNodeKind.BinaryOperator && this.TranslateBinaryOperatorPriority(((BinaryOperatorNode)rightNode).OperatorKind) < this.TranslateBinaryOperatorPriority(node.OperatorKind))
+			var right = TranslateNode(node.Right);
+			if (rightNode?.Kind == QueryNodeKind.BinaryOperator && TranslateBinaryOperatorPriority(((BinaryOperatorNode)rightNode).OperatorKind) < TranslateBinaryOperatorPriority(node.OperatorKind))
 			{
 				right = string.Concat(Constants.SymbolOpenParen, right, Constants.SymbolClosedParen);
 			}
 
-			return string.Concat(left, Constants.SymbolSpace, this.BinaryOperatorNodeToString(node.OperatorKind), Constants.SymbolSpace, right);
+			return string.Concat(left, Constants.SymbolSpace, BinaryOperatorNodeToString(node.OperatorKind), Constants.SymbolSpace, right);
 		}
 
-		/// <summary>
-		/// Translates a <see cref="CollectionPropertyAccessNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(CollectionNavigationNode node)
 		{
 			var navigationPath = GetNavigationPath(node);
 			return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSymbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{navigationPath}";
 		}
 
-		/// <summary>
-		/// Translates a <see cref="CollectionPropertyAccessNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(CollectionPropertyAccessNode node)
 		{
-			return this.TranslatePropertyAccess(node.Source, node.Property.Name);
+			return TranslatePropertyAccess(node.Source, node.Property.Name);
 		}
 
-		/// <summary>
-		/// Translates a <see cref="CollectionPropertyAccessNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(ConstantNode node)
 		{
 			if (node.Value == null)
@@ -146,7 +122,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 
 			if (node.TypeReference.Definition.TypeKind == EdmTypeKind.Enum)
 			{
-				return this.QueryFormatter.TranslateEnumValue(node.LiteralText, (node.Value as ODataEnumValue).TypeName);
+				return QueryFormatter.TranslateEnumValue(node.LiteralText, ((ODataEnumValue)node.Value).TypeName);
 			}
 
 			if (node.TypeReference.IsDateTimeOffset())
@@ -157,31 +133,19 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			return node.LiteralText;
 		}
 
-		/// <summary>
-		/// Translates a <see cref="ConvertNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(ConvertNode node)
 		{
-			return this.TranslateNode(node.Source);
+			return TranslateNode(node.Source);
 		}
 
-		/// <summary>
-		/// Visit an CollectionPropertyCastNode
-		/// </summary>
-		/// <param name="node">the node to visit</param>
-		/// <returns>The translated string of CollectionPropertyCastNode</returns>
+		/// <inheritdoc />
 		public override string Visit(CollectionResourceCastNode node)
 		{
-			return this.TranslatePropertyAccess(node.Source, node.CollectionType.Definition.ToString());
+			return TranslatePropertyAccess(node.Source, node.CollectionType.Definition.ToString());
 		}
 
-		/// <summary>
-		/// Translates a <see cref="EntityRangeVariableReferenceNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(ResourceRangeVariableReferenceNode node)
 		{
 			if (node.Name == "$it")
@@ -194,175 +158,115 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			}
 		}
 
-		/// <summary>
-		/// Translates a <see cref="NonentityRangeVariableReferenceNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(NonResourceRangeVariableReferenceNode node)
 		{
 			return node.Name;
 		}
 
-		/// <summary>
-		/// Translates a <see cref="SingleEntityCastNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(SingleResourceCastNode node)
 		{
-			return this.TranslatePropertyAccess(node.Source, node.TypeReference.Definition.ToString());
+			return TranslatePropertyAccess(node.Source, node.TypeReference.Definition.ToString());
 		}
 
-		/// <summary>
-		/// Translates a <see cref="SingleValueCastNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string of SingleValueCastNode.</returns>
+		/// <inheritdoc />
 		public override string Visit(SingleValueCastNode node)
 		{
-			return this.TranslatePropertyAccess(node.Source, node.TypeReference.Definition.ToString());
+			return TranslatePropertyAccess(node.Source, node.TypeReference.Definition.ToString());
 		}
 
-		/// <summary>
-		/// Translates a <see cref="SingleNavigationNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(SingleNavigationNode node)
 		{
-			return this.TranslatePropertyAccess(node.Source, node.NavigationProperty.Name, node.NavigationSource);
+			return TranslatePropertyAccess(node.Source, node.NavigationProperty.Name);
 		}
 
-		/// <summary>
-		/// Translates a <see cref="SingleEntityFunctionCallNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(SingleResourceFunctionCallNode node)
 		{
 			string result = node.Name;
 			if (node.Source != null)
 			{
-				result = this.TranslatePropertyAccess(node.Source, result);
+				result = TranslatePropertyAccess(node.Source, result);
 			}
 
-			return this.TranslateFunctionCall(result, node.Parameters);
+			return TranslateFunctionCall(result, node.Parameters);
 		}
 
-		/// <summary>
-		/// Translates a <see cref="SingleValueFunctionCallNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(SingleValueFunctionCallNode node)
 		{
 			string result = node.Name;
 			if (node.Source != null)
 			{
-				result = this.TranslatePropertyAccess(node.Source, result);
+				result = TranslatePropertyAccess(node.Source, result);
 			}
 
-			return this.TranslateFunctionCall(result, node.Parameters);
+			return TranslateFunctionCall(result, node.Parameters);
 		}
 
-		/// <summary>
-		/// Translates a <see cref="CollectionFunctionCallNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string of CollectionFunctionCallNode.</returns>
+		/// <inheritdoc />
 		public override string Visit(CollectionFunctionCallNode node)
 		{
-			string result = node.Name;
+			var result = node.Name;
 			if (node.Source != null)
 			{
-				result = this.TranslatePropertyAccess(node.Source, result);
+				result = TranslatePropertyAccess(node.Source, result);
 			}
 
-			return this.TranslateFunctionCall(result, node.Parameters);
+			return TranslateFunctionCall(result, node.Parameters);
 		}
 
-		/// <summary>
-		/// Translates a <see cref="EntityCollectionFunctionCallNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string of EntityCollectionFunctionCallNode.</returns>
+		/// <inheritdoc />
 		public override string Visit(CollectionResourceFunctionCallNode node)
 		{
 			string result = node.Name;
 			if (node.Source != null)
 			{
-				result = this.TranslatePropertyAccess(node.Source, result);
+				result = TranslatePropertyAccess(node.Source, result);
 			}
 
-			return this.TranslateFunctionCall(result, node.Parameters);
+			return TranslateFunctionCall(result, node.Parameters);
 		}
 
-		/// <summary>
-		/// Translates a <see cref="SingleValueOpenPropertyAccessNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(SingleValueOpenPropertyAccessNode node)
 		{
-			return this.TranslatePropertyAccess(node.Source, node.Name);
+			return TranslatePropertyAccess(node.Source, node.Name);
 		}
 
-		/// <summary>
-		/// Translates an <see cref="CollectionOpenPropertyAccessNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(CollectionOpenPropertyAccessNode node)
 		{
-			return this.TranslatePropertyAccess(node.Source, node.Name);
+			return TranslatePropertyAccess(node.Source, node.Name);
 		}
 
-		/// <summary>
-		/// Translates a <see cref="SingleValuePropertyAccessNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(SingleValuePropertyAccessNode node)
 		{
-			return this.TranslatePropertyAccess(node.Source, node.Property.Name);
+			return TranslatePropertyAccess(node.Source, node.Property.Name);
 		}
 
-		/// <summary>
-		/// Translates a <see cref="ParameterAliasNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(ParameterAliasNode node)
 		{
 			return node.Alias;
 		}
 
-		/// <summary>
-		/// Translates a <see cref="NamedFunctionParameterNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string of NamedFunctionParameterNode.</returns>
+		/// <inheritdoc />
 		public override string Visit(NamedFunctionParameterNode node)
 		{
-			return string.Concat(node.Name, Constants.SymbolEqual, this.TranslateNode(node.Value));
+			return string.Concat(node.Name, Constants.SymbolEqual, TranslateNode(node.Value));
 		}
 
-		/// <summary>
-		/// Translates a <see cref="NamedFunctionParameterNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string of SearchTermNode.</returns>
+		/// <inheritdoc />
 		public override string Visit(SearchTermNode node)
 		{
 			return node.Text;
 		}
 
-		/// <summary>
-		/// Translates a <see cref="UnaryOperatorNode"/> into a corresponding <see cref="string"/>.
-		/// </summary>
-		/// <param name="node">The node to translate.</param>
-		/// <returns>The translated string.</returns>
+		/// <inheritdoc />
 		public override string Visit(UnaryOperatorNode node)
 		{
 			string result = null;
@@ -374,23 +278,16 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			// if current translated node is SearchNode, the UnaryOperator should return NOT, or return not
 			if (node.OperatorKind == UnaryOperatorKind.Not)
 			{
-				if (this.searchFlag)
-				{
-					result = Constants.SearchKeywordNot;
-				}
-				else
-				{
-					result = Constants.KeywordNot;
-				}
+				result = _searchFlag ? Constants.SearchKeywordNot : Constants.KeywordNot;
 			}
 
 			if (node.Operand.Kind == QueryNodeKind.Constant || node.Operand.Kind == QueryNodeKind.SearchTerm)
 			{
-				return string.Concat(result, ' ', this.TranslateNode(node.Operand));
+				return string.Concat(result, ' ', TranslateNode(node.Operand));
 			}
 			else
 			{
-				return string.Concat(result, Constants.SymbolOpenParen, this.TranslateNode(node.Operand), Constants.SymbolClosedParen);
+				return string.Concat(result, Constants.SymbolOpenParen, TranslateNode(node.Operand), Constants.SymbolClosedParen);
 			}
 		}
 
@@ -405,7 +302,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// <returns>The translated string.</returns>
 		internal static string TranslateLevelsClause(LevelsClause levelsClause)
 		{
-			string levelsStr = levelsClause.IsMaxLevel
+			var levelsStr = levelsClause.IsMaxLevel
 					? Constants.KeywordMax
 					: levelsClause.Level.ToString(CultureInfo.InvariantCulture);
 			return levelsStr;
@@ -426,9 +323,9 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// <returns>The translated string.</returns>
 		internal string TranslateSearchClause(SearchClause searchClause)
 		{
-			this.searchFlag = true;
-			string searchStr = this.TranslateNode(searchClause.Expression);
-			this.searchFlag = false;
+			_searchFlag = true;
+			string searchStr = TranslateNode(searchClause.Expression);
+			_searchFlag = false;
 			return searchStr;
 		}
 
@@ -446,7 +343,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 				{
 					if (keyValuePair.Value != null)
 					{
-						string tmp = this.TranslateNode(keyValuePair.Value);
+						string tmp = TranslateNode(keyValuePair.Value);
 						result = string.IsNullOrEmpty(tmp) ? result : string.Concat(result, string.IsNullOrEmpty(result) ? null : Constants.RequestParamsAggregator.ToString(), keyValuePair.Key, Constants.SymbolEqual, Uri.EscapeDataString(tmp));
 					}
 				}
@@ -460,20 +357,12 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// </summary>
 		/// <param name="sourceNode">The source of the property access.</param>
 		/// <param name="edmPropertyName">The structural or navigation property being accessed.</param>
-		/// <param name="navigationSource">The navigation source of the result, required for navigations.</param>
 		/// <returns>The translated string.</returns>
-		private string TranslatePropertyAccess(QueryNode sourceNode, string edmPropertyName, IEdmNavigationSource navigationSource = null)
+		private string TranslatePropertyAccess(QueryNode sourceNode, string edmPropertyName)
 		{
-			string source = this.TranslateNode(sourceNode);
+			var source = TranslateNode(sourceNode);
 
-			if (string.IsNullOrEmpty(source))
-			{
-				return this.QueryFormatter.TranslateFieldName(edmPropertyName);
-			}
-			else
-			{
-				return this.QueryFormatter.TranslateSource(source, edmPropertyName);
-			}
+			return string.IsNullOrEmpty(source) ? QueryFormatter.TranslateFieldName(edmPropertyName) : QueryFormatter.TranslateSource(source, edmPropertyName);
 		}
 
 		/// <summary>
@@ -486,10 +375,10 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// </returns>
 		private string TranslateFunctionCall(string functionName, IEnumerable<QueryNode> argumentNodes)
 		{
-			string result = string.Empty;
+			var result = string.Empty;
 			foreach (QueryNode queryNode in argumentNodes)
 			{
-				result = string.Concat(result, string.IsNullOrEmpty(result) ? null : Constants.SymbolComma.ToString(), this.TranslateNode(queryNode));
+				result = string.Concat(result, string.IsNullOrEmpty(result) ? null : Constants.SymbolComma.ToString(), TranslateNode(queryNode));
 			}
 
 			var translatedFunctionCall = string.Concat(QueryFormatter.TranslateFunctionName(functionName), Constants.SymbolOpenParen, result, Constants.SymbolClosedParen);
@@ -532,7 +421,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		/// </summary>
 		/// <param name="operatorKind">binary operator </param>
 		/// <returns>the priority value of the binary operator</returns>
-		private int TranslateBinaryOperatorPriority(BinaryOperatorKind operatorKind)
+		private static int TranslateBinaryOperatorPriority(BinaryOperatorKind operatorKind)
 		{
 			switch (operatorKind)
 			{
