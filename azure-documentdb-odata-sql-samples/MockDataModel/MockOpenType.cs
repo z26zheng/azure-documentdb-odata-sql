@@ -40,6 +40,7 @@ namespace azure_documentdb_odata_sql_tests
 		public const string LocationsPropertyName = "locations";
 		public const string CompetitorsPropertyName = "competitors";
 		public const string CompetitorPropertyName = "competitor";
+		public const string PayloadPropertyName = "payload";
 
 		/// <summary>
 		/// EnglishName
@@ -87,6 +88,10 @@ namespace azure_documentdb_odata_sql_tests
 		[DataMember(Name = CompetitorPropertyName)]
 		[JsonProperty(PropertyName = CompetitorPropertyName)]
 		public Competitor Competitor { get; set; }
+
+		[DataMember(Name = PayloadPropertyName)]
+		[JsonProperty(PropertyName = PayloadPropertyName)]
+		public Payload Payload { get; set; }
 	}
 
 	[DataContract]
@@ -159,5 +164,80 @@ namespace azure_documentdb_odata_sql_tests
 		[DataMember(Name = LocationsPropertyName)]
 		[JsonProperty(PropertyName = LocationsPropertyName)]
 		public List<Location> Locations { get; set; }
+	}
+
+	[DataContract]
+	public class Payload
+	{
+		public const string BetPropertyName = "bet";
+
+		[DataMember(Name = BetPropertyName)]
+		[JsonProperty(PropertyName = BetPropertyName)]
+		public Bet Bet { get; set; }
+	}
+
+	[DataContract]
+	public class Bet
+	{
+		public const string StatusPropertyName = "status";
+		public const string LegsPropertyName = "legs";
+
+		[DataMember(Name = StatusPropertyName)]
+		[JsonProperty(PropertyName = StatusPropertyName)]
+		public BetStatus Status { get; set; }
+
+		[DataMember(Name = LegsPropertyName)]
+		[JsonProperty(PropertyName = LegsPropertyName)]
+		public List<Leg> Legs { get; set; }
+	}
+
+	[DataContract]
+	public enum BetStatus
+	{
+		[EnumMember]
+		Accepted,
+
+		[EnumMember]
+		Processing
+	}
+
+	[DataContract]
+	public class Leg
+	{
+		public const string IdPropertyName = "id";
+		public const string EventPropertyName = "event";
+		public const string OutcomesPropertyName = "outcomes";
+
+		[DataMember(Name = IdPropertyName)]
+		[JsonProperty(PropertyName = IdPropertyName)]
+		public string Id { get; set; }
+
+		[DataMember(Name = EventPropertyName)]
+		[JsonProperty(PropertyName = EventPropertyName)]
+		public Event Event { get; set; }
+
+		[DataMember(Name = OutcomesPropertyName)]
+		[JsonProperty(PropertyName = OutcomesPropertyName)]
+		public List<Outcome> Outcomes { get; set; }
+	}
+
+	[DataContract]
+	public class Outcome
+	{
+		public const string IdPropertyName = "id";
+
+		[DataMember(Name = IdPropertyName)]
+		[JsonProperty(PropertyName = IdPropertyName)]
+		public string Id { get; set; }
+	}
+
+	[DataContract]
+	public class Event
+	{
+		public const string IdPropertyName = "id";
+
+		[DataMember(Name = IdPropertyName)]
+		[JsonProperty(PropertyName = IdPropertyName)]
+		public string Id { get; set; }
 	}
 }
