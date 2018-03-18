@@ -577,10 +577,33 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			if (nodeIn.NavigationSource == null)
 				return nodeIn.NavigationProperty.Name;
 
-			var pathSegments = nodeIn.NavigationSource.Path.PathSegments.Skip(1).ToArray();
+			string[] pathSegments;
+			if (nodeIn.Source.Kind == QueryNodeKind.SingleComplexNode)
+			{
+				var paths = GetPathFromSource(nodeIn.Source as SingleComplexNode);
+				paths.Add(nodeIn.NavigationProperty.Name);
+				pathSegments = paths.ToArray();
+			}
+			else
+			{
+				pathSegments = nodeIn.NavigationSource.Path.PathSegments.Skip(1).ToArray();
+			}
+
 			var path = string.Join(Constants.SymbolDot, pathSegments);
 
 			return string.IsNullOrWhiteSpace(path) ? string.Empty : path;
+		}
+
+		private static List<string> GetPathFromSource(SingleComplexNode node)
+		{
+			if (!(node.Source is SingleComplexNode))
+			{
+				return new List<string> { node.Property.Name };
+			}
+
+			var sources = GetPathFromSource((SingleComplexNode)node.Source);
+			sources.Add(node.Property.Name);
+			return sources;
 		}
 	}
 }

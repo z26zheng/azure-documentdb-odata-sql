@@ -566,5 +566,16 @@ namespace azure_documentdb_odata_sql_tests
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
 			Assert.AreEqual("SELECT VALUE c FROM c JOIN j IN c.competitor.locations JOIN l IN j.locations WHERE l.id = 'test' ", sqlQuery);
 		}
+
+		[TestMethod]
+		public void TranslateAnyToJoin_WhenThereIsOneNestedjoinWithComplexPath()
+		{
+			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=payload/bet/legs/any(l: l/outcomes/any(o: o/id eq 'test'))");
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN l IN c.payload.bet.legs JOIN o IN l.outcomes WHERE o.id = 'test' ", sqlQuery);
+		}
 	}
 }
