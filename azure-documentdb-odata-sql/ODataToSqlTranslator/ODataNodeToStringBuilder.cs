@@ -291,6 +291,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			}
 		}
 
+		/// <inheritdoc />
 		public override string Visit(CollectionComplexNode nodeIn)
 		{
 			var navigationPath = GetNavigationPath(nodeIn);
