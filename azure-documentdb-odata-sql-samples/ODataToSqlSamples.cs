@@ -591,6 +591,17 @@ namespace azure_documentdb_odata_sql_tests
 			Assert.AreEqual("SELECT * FROM c WHERE c.payload.bet.status = 'Accepted' ", sqlQuery);
 		}
 
+		[TestMethod]
+		public void TranslateAnyToJoin_WhenThereIsOneNestedjoin2()
+		{
+			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=payload/bet/legs/any(l:l/outcomes/any(o:o/competitor/id eq 'test'))");
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+
+			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN l IN c.payload.bet.legs JOIN o IN l.outcomes WHERE o.competitor.id = 'test' ", sqlQuery);
+		}
+
 		#region Helpers
 		private static ODataQueryOptions GetODataQueryOptions(string oData)
 		{

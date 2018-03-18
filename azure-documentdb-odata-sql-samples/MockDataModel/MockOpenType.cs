@@ -225,10 +225,15 @@ namespace azure_documentdb_odata_sql_tests
 	public class Outcome
 	{
 		public const string IdPropertyName = "id";
+		public const string CompetitorPropertyName = "competitor";
 
 		[DataMember(Name = IdPropertyName)]
 		[JsonProperty(PropertyName = IdPropertyName)]
 		public string Id { get; set; }
+
+		[DataMember(Name = CompetitorPropertyName)]
+		[JsonProperty(PropertyName = CompetitorPropertyName)]
+		public Competitor Competitor { get; set; }
 	}
 
 	[DataContract]

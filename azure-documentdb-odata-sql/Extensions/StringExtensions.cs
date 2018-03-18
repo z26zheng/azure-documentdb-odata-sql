@@ -52,7 +52,8 @@ namespace Microsoft.Azure.Documents.OData.Sql.Extensions
 
 				var collection = match.Groups[collectionIndex].Value.Replace("c.", $"{useLetter}.");
 				var operand = match.Groups[operandIndex].Value.Trim();
-				var property = match.Groups[propertyIndex].Value.Split(operand[0])[0].Split('.').Last().Trim();
+				var property = string.Join(Constants.SymbolDot,
+					match.Groups[propertyIndex].Value.Split(operand[0])[0].Split('.').Skip(2).Select(x => x.Trim()));
 				var value = match.Groups[valueIndex];
 
 				var finalValue = !string.IsNullOrWhiteSpace(subCondition) && subCondition.IndexOf("c.", StringComparison.Ordinal) == -1 ? subCondition : string.Format(clauseTemplate, letter, property, operand, value);

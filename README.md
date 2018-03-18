@@ -21,6 +21,7 @@ PRs are welcome.
 Converts [OData V4](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html) queries to [DocumentDB SQL](https://azure.microsoft.com/en-us/documentation/articles/documentdb-sql-query/) queries. 
 
 ## Release Notes
+* 2.0.29 Added support for nested join condition based on child property
 * 2.0.28 Added support for single complex nodex - classes without id
 * 2.0.25 Added support for one nested join when part of a complex node
 * 2.0.24 Added support for one nested join with one condition for the internal join
