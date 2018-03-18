@@ -165,6 +165,12 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		}
 
 		/// <inheritdoc />
+		public override string Visit(SingleComplexNode node)
+		{
+			return GetNavigationPath(node);
+		}
+
+		/// <inheritdoc />
 		public override string Visit(SingleResourceCastNode node)
 		{
 			return TranslatePropertyAccess(node.Source, node.TypeReference.Definition.ToString());
@@ -472,6 +478,28 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			{
 				var paths = GetPathFromSource(nodeIn.Source as SingleComplexNode);
 				paths.Add(nodeIn.NavigationProperty.Name);
+				pathSegments = paths.ToArray();
+			}
+			else
+			{
+				pathSegments = nodeIn.NavigationSource.Path.PathSegments.Skip(1).ToArray();
+			}
+
+			var path = string.Join(Constants.SymbolDot, pathSegments);
+
+			return string.IsNullOrWhiteSpace(path) ? string.Empty : path;
+		}
+
+		private static string GetNavigationPath(SingleComplexNode nodeIn)
+		{
+			if (nodeIn.NavigationSource == null)
+				return nodeIn.Property.Name;
+
+			string[] pathSegments;
+			if (nodeIn.Source.Kind == QueryNodeKind.SingleComplexNode)
+			{
+				var paths = GetPathFromSource(nodeIn.Source as SingleComplexNode);
+				paths.Add(nodeIn.Property.Name);
 				pathSegments = paths.ToArray();
 			}
 			else

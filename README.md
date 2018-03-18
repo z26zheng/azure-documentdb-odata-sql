@@ -1,8 +1,27 @@
+# <span style="color:red">**Warning!!! Read Before Using**</span>
+
+When we started using CosmosDB it was still called DocumentDB. At that time the support was very limited. We delayed our usage of oData as much as possible in hope to receive an oData package from Microsoft.
+
+After we realized that it is unlikely for Microsoft to support oData for CosmosDb, I thought ok, we will get this package and build on top of it. I couldn't get a PR approved to the original repository because the original author is not responding therefore, I forked it. But it's proven to be more challenging that I originally thought. 
+
+It turned out that there are heaps of features missing from this code-base and IMHO it's not written in the prettiest way possible. It's also based on .Net 4.6.2 which means no support for .Net Code 2 or .Net Standard 2.
+
+We are using this package internally. Every time something doesn't work based on our new models and findings, I will jump in and add that missing feature. 
+
+The development on this package is very "patchy" so to speak. My aim is to add the missing features in the shortest amount of time possible with the least effort. Sometimes by implementing a missing override and another time by adding some ugly RegEx to reformat the output. 
+
+Please be aware of the situation and use this package at your own risk.
+
+PRs are welcome.
+
+*March 2018, Aboo*
+
 # Microsoft.Azure.Documents.OData.Sql
 
 Converts [OData V4](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html) queries to [DocumentDB SQL](https://azure.microsoft.com/en-us/documentation/articles/documentdb-sql-query/) queries. 
 
 ## Release Notes
+* 2.0.28 Added support for single complex nodex - classes without id
 * 2.0.25 Added support for one nested join when part of a complex node
 * 2.0.24 Added support for one nested join with one condition for the internal join
 * 2.0.23 Added support for collection condition based on id

@@ -577,5 +577,31 @@ namespace azure_documentdb_odata_sql_tests
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
 			Assert.AreEqual("SELECT VALUE c FROM c JOIN l IN c.payload.bet.legs JOIN o IN l.outcomes WHERE o.id = 'test' ", sqlQuery);
 		}
+
+		[TestMethod]
+		public void TranslateEnum_WhenClassDoestHaveId()
+		{
+			// arrange
+			var oDataQueryOptions = GetODataQueryOptions("$filter=payload/bet/status eq azure_documentdb_odata_sql_tests.BetStatus'Accepted'");
+
+			// act
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert
+			Assert.AreEqual("SELECT * FROM c WHERE c.payload.bet.status = 'Accepted' ", sqlQuery);
+		}
+
+		#region Helpers
+		private static ODataQueryOptions GetODataQueryOptions(string oData)
+		{
+			const string baseUrl = "http://localhost/User?";
+
+			HttpRequestMessage.RequestUri = new Uri($"{baseUrl}{oData}");
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			return oDataQueryOptions;
+		}
+
+		private static ODataToSqlTranslator Translator => new ODataToSqlTranslator(new SQLQueryFormatter());
+		#endregion
 	}
 }
