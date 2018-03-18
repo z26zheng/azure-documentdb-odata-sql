@@ -592,7 +592,7 @@ namespace azure_documentdb_odata_sql_tests
 		}
 
 		[TestMethod]
-		public void TranslateAnyToJoin_WhenThereIsOneNestedjoin2()
+		public void TranslateAnyToJoin_WhenThereIsOneNestedjoinAndConditionBasedOnChildProperty()
 		{
 			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=payload/bet/legs/any(l:l/outcomes/any(o:o/competitor/id eq 'test'))");
 			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
