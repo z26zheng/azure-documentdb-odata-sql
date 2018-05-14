@@ -4,7 +4,7 @@ When we started using CosmosDB it was still called DocumentDB. At that time the 
 
 After we realized that it is unlikely for Microsoft to support oData for CosmosDb, I thought ok, we will get this package and build on top of it. I couldn't get a PR approved to the original repository because the original author is not responding therefore, I forked it. But it's proven to be more challenging that I originally thought. 
 
-It turned out that there are heaps of features missing from this code-base and IMHO it's not written in the prettiest way possible. It's also based on .Net 4.6.2 which means no support for .Net Code 2 or .Net Standard 2.
+It turned out that there are heaps of features missing from this code-base and IMHO it's not written in the prettiest way possible. It's also based on .Net 4.6.2 which means no support for .Net Core 2 or .Net Standard 2.
 
 We are using this package internally. Every time something doesn't work based on our new models and findings, I will jump in and add that missing feature. 
 
@@ -21,6 +21,7 @@ PRs are welcome.
 Converts [OData V4](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html) queries to [DocumentDB SQL](https://azure.microsoft.com/en-us/documentation/articles/documentdb-sql-query/) queries. 
 
 ## Release Notes
+* 2.0.31 Added support for using group as property name
 * 2.0.29 Added support for nested join condition based on child property
 * 2.0.28 Added support for single complex nodex - classes without id
 * 2.0.25 Added support for one nested join when part of a complex node
@@ -132,3 +133,4 @@ The options can be combined with bit operators such as ```(TranslateOptions.SELE
 
 * **Aboo Azarnoush** - Lambda Solutions
 * **Ziyou Zheng** - Microsoft Universal Store Team -
+* **Amir Hesami** - Palmerbet

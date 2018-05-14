@@ -73,5 +73,28 @@ namespace Microsoft.Azure.Documents.OData.Sql.Extensions
 				return value;
 			return value.IndexOf(openParenthesis) == -1 && value[value.Length - 1] == closeParenthesis ? value.Substring(0, value.Length - 1) : value;
 		}
+		
+		public static string FindAndTranslateReservedKeywords(this string value)
+		{
+			var result = string.Copy(value);
+
+			var reservedKeywordsList = new List<string>
+			{
+				"group"
+			};
+
+			foreach (var reservedKeyword in reservedKeywordsList)
+			{
+				var reservedKeywordRegex = "(\\.)(" + reservedKeyword + ")(\\.| )";
+				var matches = Regex.Matches(result, reservedKeywordRegex, RegexOptions.IgnoreCase);
+				foreach (Match match in matches)
+				{
+					var newValue = $"[\'{match.Groups[2].Value}\']{match.Groups[3].Value}";
+					result = result.Replace(match.Value, newValue);
+				}
+			}
+
+			return result;
+		}
 	}
 }
