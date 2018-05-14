@@ -592,6 +592,84 @@ namespace azure_documentdb_odata_sql_tests
 		}
 
 		[TestMethod]
+		public void TranslateReservedKeyword_WhenClassHasReservedLowercaseGroupAsPropertyName()
+		{
+			// arrange
+			var oDataQueryOptions = GetODataQueryOptions("$filter=group/id eq 'groupId'");
+
+			// act
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert
+			Assert.AreEqual("SELECT * FROM c WHERE c['group'].id = 'groupId' ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateReservedKeyword_WhenClassHasSecondLevelReservedLowercaseGroupAsPropertyName()
+		{
+			// arrange
+			var oDataQueryOptions = GetODataQueryOptions("$filter=product/group/id eq 'groupId'");
+
+			// act
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert
+			Assert.AreEqual("SELECT * FROM c WHERE c.product['group'].id = 'groupId' ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateReservedKeyword_WhenClassHasReservedLowercaseGroupAsPropertyNameInJoin()
+		{
+			// arrange
+			var oDataQueryOptions = GetODataQueryOptions("$filter=competitors/any(d: d/group/id eq 'groupId')");
+
+			// act
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN d IN c.competitors WHERE d['group'].id = 'groupId' ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateReservedKeyword_WhenClassHasReservedUppercaseGroupAsPropertyName()
+		{
+			// arrange
+			var oDataQueryOptions = GetODataQueryOptions("$filter=Group/id eq 'groupId'");
+
+			// act
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert
+			Assert.AreEqual("SELECT * FROM c WHERE c['Group'].id = 'groupId' ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateReservedKeyword_WhenClassHasReservedMixedcaseGroupAsPropertyName()
+		{
+			// arrange
+			var oDataQueryOptions = GetODataQueryOptions("$filter=GrOup/id eq 'groupId'");
+
+			// act
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert
+			Assert.AreEqual("SELECT * FROM c WHERE c['GrOup'].id = 'groupId' ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void TranslateReservedKeyword_WhenClassHasReservedGroupAsPropertyName()
+		{
+			// arrange
+			var oDataQueryOptions = GetODataQueryOptions("$filter=GrOup eq 'groupId'");
+
+			// act
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert
+			Assert.AreEqual("SELECT * FROM c WHERE c['GrOup'] = 'groupId' ", sqlQuery);
+		}
+
+		[TestMethod]
 		public void TranslateAnyToJoin_WhenThereIsOneNestedjoinAndConditionBasedOnChildProperty()
 		{
 			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=payload/bet/legs/any(l:l/outcomes/any(o:o/competitor/id eq 'test'))");
