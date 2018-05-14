@@ -102,6 +102,7 @@ namespace azure_documentdb_odata_sql_tests
 		public const string LocationsPropertyName = "locations";
 		public const string CompetitorPropertyName = "competitor";
 		public const string CompetitorTwoPropertyName = "competitorTwo";
+		public const string GroupPropertyName = "group";
 
 		[DataMember(Name = IdPropertyName)]
 		[JsonProperty(PropertyName = IdPropertyName)]
@@ -123,6 +124,10 @@ namespace azure_documentdb_odata_sql_tests
 		[DataMember(Name = CompetitorTwoPropertyName)]
 		[JsonProperty(PropertyName = CompetitorTwoPropertyName)]
 		public Competitor Competitor2 { get; set; }
+
+		[DataMember(Name = GroupPropertyName)]
+		[JsonProperty(PropertyName = GroupPropertyName)]
+		public Group Group { get; set; }
 	}
 
 	[DataContract]
@@ -238,6 +243,16 @@ namespace azure_documentdb_odata_sql_tests
 
 	[DataContract]
 	public class Event
+	{
+		public const string IdPropertyName = "id";
+
+		[DataMember(Name = IdPropertyName)]
+		[JsonProperty(PropertyName = IdPropertyName)]
+		public string Id { get; set; }
+	}
+
+	[DataContract]
+	public class Group : Document
 	{
 		public const string IdPropertyName = "id";
 

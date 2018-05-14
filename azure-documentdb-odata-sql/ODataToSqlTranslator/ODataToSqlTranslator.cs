@@ -137,6 +137,7 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			_joinClauses = result.JoinClauses;
 
 			translation = translation.FindAndTranslateAny();
+			translation = translation.FindAndTranslateReservedKeywords();
 			return translation;
 		}
 
