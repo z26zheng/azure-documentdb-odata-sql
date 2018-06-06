@@ -670,6 +670,19 @@ namespace azure_documentdb_odata_sql_tests
 		}
 
 		[TestMethod]
+		public void Translate_ReturnsExpectedQuery_WhenAComplexNodeHasFirstLevelConstantCondition()
+		{
+			// arrange
+			var oDataQueryOptions = GetODataQueryOptions("$filter=bonus/balance gt 0");
+
+			// act
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert
+			Assert.AreEqual("SELECT * FROM c WHERE c.bonus.balance > 0 ", sqlQuery);
+		}
+
+		[TestMethod]
 		public void TranslateAnyToJoin_WhenThereIsOneNestedjoinAndConditionBasedOnChildProperty()
 		{
 			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=payload/bet/legs/any(l:l/outcomes/any(o:o/competitor/id eq 'test'))");

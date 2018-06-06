@@ -504,7 +504,10 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			}
 			else
 			{
-				pathSegments = nodeIn.NavigationSource.Path.PathSegments.Skip(1).ToArray();
+				if (nodeIn.NavigationSource.Path.PathSegments.ToArray().Length > 1)
+					pathSegments = nodeIn.NavigationSource.Path.PathSegments.Skip(1).ToArray();
+				else
+					pathSegments = new[] { nodeIn.Property.Name };
 			}
 
 			var path = string.Join(Constants.SymbolDot, pathSegments);

@@ -41,6 +41,8 @@ namespace azure_documentdb_odata_sql_tests
 		public const string CompetitorsPropertyName = "competitors";
 		public const string CompetitorPropertyName = "competitor";
 		public const string PayloadPropertyName = "payload";
+		public const string BalancePropertyName = "balance";
+		public const string BonusPropertyName = "bonus";
 
 		/// <summary>
 		/// EnglishName
@@ -92,6 +94,20 @@ namespace azure_documentdb_odata_sql_tests
 		[DataMember(Name = PayloadPropertyName)]
 		[JsonProperty(PropertyName = PayloadPropertyName)]
 		public Payload Payload { get; set; }
+
+		[DataMember(Name = BonusPropertyName)]
+		[JsonProperty(PropertyName = BonusPropertyName)]
+		public Bonus Bonus { get; set; }
+	}
+
+	[DataContract]
+	public class Bonus
+	{
+		public const string BalancePropertyName = "balance";
+
+		[DataMember(Name = BalancePropertyName)]
+		[JsonProperty(PropertyName = BalancePropertyName)]
+		public decimal Balance { get; set; }
 	}
 
 	[DataContract]
