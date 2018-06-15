@@ -691,6 +691,18 @@ namespace azure_documentdb_odata_sql_tests
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
 			Assert.AreEqual("SELECT VALUE c FROM c JOIN l IN c.payload.bet.legs JOIN o IN l.outcomes WHERE o.competitor.id = 'test' ", sqlQuery);
+
+		[TestMethod]
+		public void TranslateAnyToJoin_ReturnsCorrectResult_WhenQueryIsBasedOnANestedProperty()
+		{
+			// arrange
+			var oDataQueryOptions = GetODataQueryOptions("$filter=sportSummaries/any(x: x/single/totalAmount gt 0)");
+
+			// act
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert
+			Assert.AreEqual("SELECT VALUE c FROM c JOIN x IN c.sportSummaries WHERE x.single.totalAmount > 0 ", sqlQuery);
 		}
 
 		#region Helpers

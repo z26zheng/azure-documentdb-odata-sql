@@ -43,6 +43,7 @@ namespace azure_documentdb_odata_sql_tests
 		public const string PayloadPropertyName = "payload";
 		public const string BalancePropertyName = "balance";
 		public const string BonusPropertyName = "bonus";
+		public const string SportSummariesPropertyName = "sportSummaries";
 
 		/// <summary>
 		/// EnglishName
@@ -98,6 +99,10 @@ namespace azure_documentdb_odata_sql_tests
 		[DataMember(Name = BonusPropertyName)]
 		[JsonProperty(PropertyName = BonusPropertyName)]
 		public Bonus Bonus { get; set; }
+
+		[DataMember(Name = SportSummariesPropertyName)]
+		[JsonProperty(PropertyName = SportSummariesPropertyName)]
+		public List<SportSummary> SportSummaries { get; set; }
 	}
 
 	[DataContract]
@@ -275,5 +280,25 @@ namespace azure_documentdb_odata_sql_tests
 		[DataMember(Name = IdPropertyName)]
 		[JsonProperty(PropertyName = IdPropertyName)]
 		public string Id { get; set; }
+	}
+
+	[DataContract]
+	public class SportSummary
+	{
+		public const string SinglePropertyName = "single";
+
+		[DataMember(Name = SinglePropertyName)]
+		[JsonProperty(PropertyName = SinglePropertyName)]
+		public SingleSummary Single { get; set; }
+	}
+
+	[DataContract]
+	public class SingleSummary
+	{
+		public const string TotalAmountPropertyName = "totalAmount";
+
+		[DataMember(Name = TotalAmountPropertyName)]
+		[JsonProperty(PropertyName = TotalAmountPropertyName)]
+		public int TotalAmount { get; set; }
 	}
 }
