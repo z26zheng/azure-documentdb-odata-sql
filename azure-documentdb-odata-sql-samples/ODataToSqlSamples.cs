@@ -685,12 +685,17 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenThereIsOneNestedjoinAndConditionBasedOnChildProperty()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=payload/bet/legs/any(l:l/outcomes/any(o:o/competitor/id eq 'test'))");
+			HttpRequestMessage.RequestUri =
+				new Uri("http://localhost/User?$filter=payload/bet/legs/any(l:l/outcomes/any(o:o/competitor/id eq 'test'))");
 			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
-			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
-			Assert.AreEqual("SELECT VALUE c FROM c JOIN l IN c.payload.bet.legs JOIN o IN l.outcomes WHERE o.competitor.id = 'test' ", sqlQuery);
+			var sqlQuery =
+				oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
+			Assert.AreEqual(
+				"SELECT VALUE c FROM c JOIN l IN c.payload.bet.legs JOIN o IN l.outcomes WHERE o.competitor.id = 'test' ",
+				sqlQuery);
+		}
 
 		[TestMethod]
 		public void TranslateAnyToJoin_ReturnsCorrectResult_WhenQueryIsBasedOnANestedProperty()
