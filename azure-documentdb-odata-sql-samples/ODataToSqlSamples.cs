@@ -724,6 +724,45 @@ namespace azure_documentdb_odata_sql_tests
 			Assert.AreEqual("SELECT VALUE c FROM c JOIN x IN c.sportSummaries WHERE (1=1) AND (x.single.totalAmount > 0) ", sqlQuery);
 		}
 
+		[TestMethod]
+		public void Translate_ReturnsCorrectResult_WhenARangeVariableIsPresent()
+		{
+			// arrange 
+			var oDataQueryOptions = GetODataQueryOptions("$filter=payload eq null ");
+
+			// act 
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert 
+			Assert.AreEqual("SELECT * FROM c WHERE c.payload = null ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void Translate_ReturnsCorrectResult_WhenARangeVariableIsPresentNotEgual()
+		{
+			// arrange 
+			var oDataQueryOptions = GetODataQueryOptions("$filter=payload ne null ");
+
+			// act 
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert 
+			Assert.AreEqual("SELECT * FROM c WHERE c.payload != null ", sqlQuery);
+		}
+
+		[TestMethod]
+		public void Translate_ReturnsCorrectResult_WhenANestedRangeVariableIsPresent()
+		{
+			// arrange 
+			var oDataQueryOptions = GetODataQueryOptions("$filter=payload/payload eq null ");
+
+			// act 
+			var sqlQuery = Translator.Translate(oDataQueryOptions, TranslateOptions.ALL);
+
+			// assert 
+			Assert.AreEqual("SELECT * FROM c WHERE c.payload.payload = null ", sqlQuery);
+		}
+
 		#region Helpers
 		private static ODataQueryOptions GetODataQueryOptions(string oData)
 		{

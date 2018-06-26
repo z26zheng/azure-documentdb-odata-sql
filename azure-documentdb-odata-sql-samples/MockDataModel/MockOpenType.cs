@@ -196,6 +196,21 @@ namespace azure_documentdb_odata_sql_tests
 	public class Payload
 	{
 		public const string BetPropertyName = "bet";
+		public const string PayloadPropertyName = "payload";
+
+		[DataMember(Name = BetPropertyName)]
+		[JsonProperty(PropertyName = BetPropertyName)]
+		public Bet Bet { get; set; }
+
+		[DataMember(Name = PayloadPropertyName)]
+		[JsonProperty(PropertyName = PayloadPropertyName)]
+		public Payload2 Payload2 { get; set; }
+	}
+
+	[DataContract]
+	public class Payload2
+	{
+		public const string BetPropertyName = "bet";
 
 		[DataMember(Name = BetPropertyName)]
 		[JsonProperty(PropertyName = BetPropertyName)]
