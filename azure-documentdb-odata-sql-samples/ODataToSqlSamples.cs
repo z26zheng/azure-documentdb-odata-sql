@@ -1,13 +1,20 @@
 ﻿using System;
 using System.Net.Http;
-using System.Web.OData;
-using System.Web.OData.Builder;
-using System.Web.OData.Extensions;
-using System.Web.OData.Query;
-using System.Web.OData.Routing;
-
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Builder;
+using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Query;
+using Microsoft.AspNet.OData.Query.Validators;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Azure.Documents.OData.Sql;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OData.UriParser;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NSubstitute;
+using ODataPath = Microsoft.AspNet.OData.Routing.ODataPath;
 
 namespace azure_documentdb_odata_sql_tests
 {
@@ -19,10 +26,9 @@ namespace azure_documentdb_odata_sql_tests
 		/// </summary>
 		private static ODataQueryContext ODataQueryContext { get; set; }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		private static HttpRequestMessage HttpRequestMessage { get; set; }
+		private static HttpRequest HttpRequest { get; set; }
+
+		private static ServiceProvider Provider { get; set; }
 
 		// Use ClassInitialize to run code before running the first test in the class
 		[ClassInitialize()]
@@ -33,28 +39,50 @@ namespace azure_documentdb_odata_sql_tests
 			var entityTypeConfiguration = builder.AddEntityType(type);
 			entityTypeConfiguration.HasKey(type.GetProperty("Id"));
 			builder.AddEntitySet(type.Name, entityTypeConfiguration);
+			var conf = builder.EntitySet<MockOpenType>(type.Name);
+			conf.EntityType.Property(p => p.Id).Name = "id";
+
 			var edmModels = builder.GetEdmModel();
 			ODataQueryContext = new ODataQueryContext(edmModels, type, new ODataPath());
+
+			var collection = new ServiceCollection();
+
+			collection.AddOData();
+			collection.AddODataQueryFilter();
+			collection.AddTransient<ODataUriResolver>();
+			collection.AddTransient<ODataQueryValidator>();
+			collection.AddTransient<TopQueryValidator>();
+			collection.AddTransient<FilterQueryValidator>();
+			collection.AddTransient<SkipQueryValidator>();
+			collection.AddTransient<OrderByQueryValidator>();
+
+			Provider = collection.BuildServiceProvider();
+
+			var applicationBuilder = Substitute.For<IApplicationBuilder>();
+			applicationBuilder.ApplicationServices.Returns(Provider);
+			var routeBuilder = new RouteBuilder(applicationBuilder);
+			routeBuilder.EnableDependencyInjection();
 		}
 
 		// Use TestInitialize to run code before running each test 
 		[TestInitialize()]
 		public void TestInitialize()
 		{
-			HttpRequestMessage = new HttpRequestMessage
+			HttpRequest = new DefaultHttpRequest(new DefaultHttpContext
 			{
-				Method = HttpMethod.Get
+				RequestServices = Provider
+			})
+			{
+				Method = "GET",
+				Host = new HostString("http://localhost")
 			};
-			var config = new System.Web.Http.HttpConfiguration();
-			config.EnableDependencyInjection();
-			HttpRequestMessage.SetConfiguration(config);
 		}
 
 		[TestMethod]
 		public void TranslateSelectAllSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.Empty;
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE);
@@ -64,8 +92,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateSelectSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$select=englishName, id");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$select=englishName, id"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE);
@@ -75,8 +103,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateSelectWithEnumSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$select=enumNumber, id");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$select=enumNumber, id"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE);
@@ -86,8 +114,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateSelectAllTopSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=property ne 'str1'&$orderby=companyId DESC,id ASC&$top=15");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=property ne 'str1'&$orderby=companyId DESC,id ASC&$top=15"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.TOP_CLAUSE);
@@ -97,8 +125,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateSelectTopSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$select=p1, p2, p3&$filter=property ne 'str1'&$orderby=companyId DESC,id ASC&$top=15");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$select=p1, p2, p3&$filter=property ne 'str1'&$orderby=companyId DESC,id ASC&$top=15"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.TOP_CLAUSE);
@@ -108,8 +136,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateWhereSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost?$filter=englishName eq 'Microsoft' and intField le 5");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost?$filter=englishName eq 'Microsoft' and intField le 5"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
@@ -119,8 +147,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateWhereWithEnumSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost?$filter=enumNumber eq azure_documentdb_odata_sql_tests.MockEnum'ONE' and intField le 5");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost?$filter=enumNumber eq azure_documentdb_odata_sql_tests.MockEnum'ONE' and intField le 5"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
@@ -130,8 +158,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateWhereWithNextedFieldsSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost?$filter=parent/child eq 'childValue' and intField le 5");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost?$filter=parent/child eq 'childValue' and intField le 5"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE);
@@ -141,8 +169,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAdditionalWhereSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost?$filter=englishName eq 'Microsoft' and intField le 5");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost?$filter=englishName eq 'Microsoft' and intField le 5"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.WHERE_CLAUSE, "c.dataType = 'MockOpenType'");
@@ -152,8 +180,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateSelectWhereSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost?$filter=englishName eq 'Microsoft'");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost?$filter=englishName eq 'Microsoft'"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.SELECT_CLAUSE | TranslateOptions.WHERE_CLAUSE, "c.dataType = 'MockOpenType'");
@@ -163,8 +191,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateOrderBySample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=property ne 'str1'&$orderby=companyId desc,id asc");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=property ne 'str1'&$orderby=companyId desc,id asc"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ORDERBY_CLAUSE);
@@ -174,8 +202,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateSelectOrderBySample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=property ne 'str1'&$orderby=companyId desc,id asc");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=property ne 'str1'&$orderby=companyId desc,id asc"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -185,8 +213,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateContainsSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=contains(englishName, 'Microsoft')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=contains(englishName, 'Microsoft')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -196,8 +224,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateStartswithSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=startswith(englishName, 'Microsoft')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=startswith(englishName, 'Microsoft')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -207,8 +235,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateEndswithSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=endswith(englishName, 'Microsoft')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=endswith(englishName, 'Microsoft')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -218,8 +246,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateUpperAndLowerSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=toupper(englishName) eq 'MICROSOFT' or tolower(englishName) eq 'microsoft'");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=toupper(englishName) eq 'MICROSOFT' or tolower(englishName) eq 'microsoft'"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -229,8 +257,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateLengthSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=length(englishName) ge 10 and length(englishName) lt 15");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=length(englishName) ge 10 and length(englishName) lt 15"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -240,8 +268,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateIndexOfSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=indexof(englishName,'soft') eq 4");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=indexof(englishName,'soft') eq 4"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -251,8 +279,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateSubstringSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=substring(englishName, 1, length(englishName)) eq 'icrosoft'");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=substring(englishName, 1, length(englishName)) eq 'icrosoft'"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -262,8 +290,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateTrimSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=trim(englishName) eq 'Microsoft'");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=trim(englishName) eq 'Microsoft'"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -273,8 +301,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateConcatSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=concat(englishName, ' Canada') eq 'Microsoft Canada'");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=concat(englishName, ' Canada') eq 'Microsoft Canada'"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -284,8 +312,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateMasterSample()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/Post?$select=id, englishName&$filter=title eq 'title1' and property/field ne 'val' or viewedCount ge 5 and (likedCount ne 3 or enumNumber eq azure_documentdb_odata_sql_tests.MockEnum'TWO')&$orderby=_lastClientEditedDateTime asc, createdDateTime desc&$top=30");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/Post?$select=id, englishName&$filter=title eq 'title1' and property/field ne 'val' or viewedCount ge 5 and (likedCount ne 3 or enumNumber eq azure_documentdb_odata_sql_tests.MockEnum'TWO')&$orderby=_lastClientEditedDateTime asc, createdDateTime desc&$top=30"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL, "c._t = 'dataType'");
@@ -295,8 +323,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateDateTime()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=startTime eq 2018-01-08T03:29:00Z");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=startTime eq 2018-01-08T03:29:00Z"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -306,8 +334,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateDateTime_WhenGreaterThan()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=startTime gt 2018-01-08T03:29:00Z");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=startTime gt 2018-01-08T03:29:00Z"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -317,8 +345,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateDateTime_WhenLowerThan()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=startTime lt 2018-01-08T03:29:00Z");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=startTime lt 2018-01-08T03:29:00Z"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -328,8 +356,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAny_WhenAnyTargetingAListProperty()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(t: t eq 'tag1')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=tags/any(t: t eq 'tag1')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -339,8 +367,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAny_WhenAnyTargetingAListPropertyWithVariableNamedAsX()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(x: x eq 'tag1')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=tags/any(x: x eq 'tag1')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -350,8 +378,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAny_WhenAnyTargetingAListPropertyWithVariableHavingNoSpace()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(x:x eq 'tag1')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=tags/any(x:x eq 'tag1')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -361,8 +389,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAny_WhenAnyTargetingAListPropertyWithVariableNameMoreThanPneLetter()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(tag: tag eq 'tag1')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=tags/any(tag: tag eq 'tag1')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -372,8 +400,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAny_WhenAnyTargetingAListOfIntProperty()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=points/any(t: t eq 1)");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=points/any(t: t eq 1)"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -383,8 +411,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAny_WhenAnyTargetingAListOfEnumProperty()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=enumNumbers/any(t: t eq azure_documentdb_odata_sql_tests.MockEnum'ONE')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=enumNumbers/any(t: t eq azure_documentdb_odata_sql_tests.MockEnum'ONE')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -394,8 +422,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAny_WhenThereAreTwoAnyInTheFilter()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(t: t eq 'tag1') and tags/any(t: t eq 'tag2')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=tags/any(t: t eq 'tag1') and tags/any(t: t eq 'tag2')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -405,8 +433,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAny_WhenThereAreThreeAnyInTheFilter()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=tags/any(t: t eq 'tag1') and tags/any(t: t eq 'tag2') and tags/any(t: t eq 'tag3')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=tags/any(t: t eq 'tag1') and tags/any(t: t eq 'tag2') and tags/any(t: t eq 'tag3')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -416,8 +444,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenQueriedBasedOnChildProperty()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(p: p/name eq 'test')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=products/any(p: p/name eq 'test')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -427,8 +455,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenQueriedBasedOnChildPropertyNumber()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(p: p/price gt 10)");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=products/any(p: p/price gt 10)"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -438,8 +466,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenQueriedBasedOnChildPropertyBoolean()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(p: p/shipped eq true)");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=products/any(p: p/shipped eq true)"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -449,8 +477,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenQueriedBasedOnMultipleChildProperty()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(p: p/name eq 'test') and locations/any(l: l/name eq 'test2')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=products/any(p: p/name eq 'test') and locations/any(l: l/name eq 'test2')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -460,8 +488,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenChildHasFieldId()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitors/any(p: p/id eq '6a7ad0aa-678e-40f9-8cdf-03e3ab4a4106')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=competitors/any(p: p/id eq '6a7ad0aa-678e-40f9-8cdf-03e3ab4a4106')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -471,8 +499,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenChildHasFieldIdBasedOnAnotherField()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitors/any(p: p/name eq 'test')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=competitors/any(p: p/name eq 'test')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -482,8 +510,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_MixedLevelProperties()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitors/any(p: p/name eq 'test') and englishName eq 'test1'");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=competitors/any(p: p/name eq 'test') and englishName eq 'test1'"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -493,8 +521,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenQueriedBasedOnChildPropertyDifferentLetter()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=products/any(j:j/name eq 'test')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=products/any(j:j/name eq 'test')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -504,8 +532,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_Works_WhenCollectionIsInFirstChildElement()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitor/locations/any(j:j/name eq 'test')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=competitor/locations/any(j:j/name eq 'test')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -515,8 +543,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_Works_WhenCollectionIsInSecondChildElement()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitor/competitor/locations/any(j:j/name eq 'test')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=competitor/competitor/locations/any(j:j/name eq 'test')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -526,8 +554,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_Works_WhenCollectionIsInThirdChildElement()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitor/competitor/competitor/locations/any(j:j/name eq 'test')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=competitor/competitor/competitor/locations/any(j:j/name eq 'test')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -537,8 +565,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_QueryBasedOnCorrectOrder_WhenCollectionIsInThirdChildElement()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitor/competitorTwo/competitor/locations/any(j:j/name eq 'test')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=competitor/competitorTwo/competitor/locations/any(j:j/name eq 'test')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -548,8 +576,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_QueryBasedOnCorrectOrder_WhenConditionIsBasedOnId()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitor/competitorTwo/locations/any(j:j/id eq 'test')");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=competitor/competitorTwo/locations/any(j:j/id eq 'test')"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -559,8 +587,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenThereIsOneNestedjoin()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=competitor/locations/any(j:j/locations/any(l:l/id eq 'test'))");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=competitor/locations/any(j:j/locations/any(l:l/id eq 'test'))"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -570,8 +598,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenThereIsOneNestedjoinWithComplexPath()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=payload/bet/legs/any(l: l/outcomes/any(o: o/id eq 'test'))");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=payload/bet/legs/any(l: l/outcomes/any(o: o/id eq 'test'))"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -672,8 +700,8 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenThereIsOneNestedjoinAndConditionBasedOnChildProperty()
 		{
-			HttpRequestMessage.RequestUri = new Uri("http://localhost/User?$filter=payload/bet/legs/any(l:l/outcomes/any(o:o/competitor/id eq 'test'))");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=payload/bet/legs/any(l:l/outcomes/any(o:o/competitor/id eq 'test'))"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
 			var sqlQuery = oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
@@ -685,8 +713,8 @@ namespace azure_documentdb_odata_sql_tests
 		{
 			const string baseUrl = "http://localhost/User?";
 
-			HttpRequestMessage.RequestUri = new Uri($"{baseUrl}{oData}");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri($"{baseUrl}{oData}"));
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 			return oDataQueryOptions;
 		}
 

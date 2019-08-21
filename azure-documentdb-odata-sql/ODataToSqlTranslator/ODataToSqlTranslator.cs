@@ -1,8 +1,15 @@
 ﻿using System;
 using System.Linq;
-using System.Web.OData.Query;
 using Microsoft.Azure.Documents.OData.Sql.Extensions;
 using Microsoft.OData.UriParser;
+
+#if NET462
+using System.Web.OData.Query;
+#endif
+
+#if NETSTANDARD2_0
+using Microsoft.AspNet.OData.Query;
+#endif
 
 namespace Microsoft.Azure.Documents.OData.Sql
 {
