@@ -713,11 +713,12 @@ namespace azure_documentdb_odata_sql_tests
 		[TestMethod]
 		public void TranslateAnyToJoin_WhenThereIsOneNestedjoinAndConditionBasedOnChildProperty()
 		{
-			HttpRequestMessage.RequestUri =
-				new Uri("http://localhost/User?$filter=payload/bet/legs/any(l:l/outcomes/any(o:o/competitor/id eq 'test'))");
-			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequestMessage);
+			HttpRequest.QueryString = QueryString.FromUriComponent(new Uri("http://localhost/User?$filter=payload/bet/legs/any(l:l/outcomes/any(o:o/competitor/id eq 'test'))"));
+
+			var oDataQueryOptions = new ODataQueryOptions(ODataQueryContext, HttpRequest);
 
 			var oDataToSqlTranslator = new ODataToSqlTranslator(new SQLQueryFormatter());
+
 			var sqlQuery =
 				oDataToSqlTranslator.Translate(oDataQueryOptions, TranslateOptions.ALL & ~TranslateOptions.TOP_CLAUSE);
 			Assert.AreEqual(
