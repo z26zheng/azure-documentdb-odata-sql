@@ -103,6 +103,10 @@ namespace Microsoft.Azure.Documents.OData.Sql
 		public override string Visit(CollectionNavigationNode node)
 		{
 			var navigationPath = GetNavigationPath(node);
+			if (navigationPath.StartsWith($"{Constants.SQLFieldNameSymbol}{Constants.SymbolDot}"))
+			{
+				return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSymbol} {navigationPath}";
+			}
 			return $"{Constants.SQLJoinSymbol} x {Constants.SQLInSymbol} {Constants.SQLFieldNameSymbol}{Constants.SymbolDot}{navigationPath}";
 		}
 
@@ -502,9 +506,18 @@ namespace Microsoft.Azure.Documents.OData.Sql
 				paths.Add(nodeIn.Property.Name);
 				pathSegments = paths.ToArray();
 			}
+			else if (nodeIn.Source.Kind == QueryNodeKind.ResourceRangeVariableReference)
+			{
+				var paths = GetPathFromSource(nodeIn.Source as ResourceRangeVariableReferenceNode);
+				paths.Add(nodeIn.Property.Name);
+				pathSegments = paths.ToArray();
+			}
 			else
 			{
-				pathSegments = nodeIn.NavigationSource.Path.PathSegments.Skip(1).ToArray();
+				if (nodeIn.NavigationSource.Path.PathSegments.ToArray().Length > 1)
+					pathSegments = nodeIn.NavigationSource.Path.PathSegments.Skip(1).ToArray();
+				else
+					pathSegments = new[] { nodeIn.Property.Name };
 			}
 
 			var path = string.Join(Constants.SymbolDot, pathSegments);
@@ -514,6 +527,13 @@ namespace Microsoft.Azure.Documents.OData.Sql
 
 		private static List<string> GetPathFromSource(SingleComplexNode node)
 		{
+			if (node.Source is ResourceRangeVariableReferenceNode referenceNode)
+			{
+				var path = GetPathFromSource(referenceNode);
+				path.Add(node.Property.Name);
+				return path;
+			}
+
 			if (!(node.Source is SingleComplexNode))
 			{
 				return new List<string> { node.Property.Name };
@@ -522,6 +542,11 @@ namespace Microsoft.Azure.Documents.OData.Sql
 			var sources = GetPathFromSource((SingleComplexNode)node.Source);
 			sources.Add(node.Property.Name);
 			return sources;
+		}
+
+		private static List<string> GetPathFromSource(ResourceRangeVariableReferenceNode node)
+		{
+			return new List<string> {node.Name == "$it" ? "c" : new ODataNodeToStringBuilder().TranslateNode(node)};
 		}
 	}
 }
